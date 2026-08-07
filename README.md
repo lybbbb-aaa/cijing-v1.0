@@ -52,8 +52,8 @@
 ## 🔧 源码运行
 
 ```bash
-git clone https://github.com/YOUR_NAME/cijing.git
-cd cijing
+git clone https://github.com/lybbbb-aaa/cijing-v1.0.git
+cd cijing-v1.0
 npm install
 # 将 widget.html 等文件复制到 node_modules/electron/dist/resources/app/
 npx electron .
@@ -67,4 +67,4 @@ npx electron .
 
 ---
 
-**Made with ❤️ by [你的名字] · [爱发电主页链接]**
+**Made with ❤️ by [lybbbb-aaa](https://github.com/lybbbb-aaa)**
