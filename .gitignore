@@ -1,0 +1,17 @@
+node_modules/
+ielts-vocab-dist/
+_dev/
+test_pkg/
+*.py
+!sync.py
+debug.log
+*.txt
+Thumbs.db
+.DS_Store
+启动桌面助手.bat
+安装依赖.bat
+清空记忆.vbs
+改键位.vbs
+ph_part*.json
+words_part*.json
+vocab_enriched.json

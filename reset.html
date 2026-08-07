@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境 · 清空记忆</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Serif SC","STSong",serif;
+  background:#f5f4f0;color:#1a1a1a;
+  width:340px;padding:24px 20px 32px;
+  -webkit-font-smoothing:antialiased;
+}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px}
+h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#7eb89a}
+.close-btn{
+  background:transparent;border:1px solid rgba(204,51,51,0.35);
+  color:#cc3333;border-radius:6px;padding:4px 10px;
+  font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.close-btn:hover{background:#fff0f0;color:#cc3333}
+.subtitle{font-size:9px;color:#888;letter-spacing:.1em;margin-bottom:22px}
+
+.stats-box{
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:10px;padding:14px 16px;margin-bottom:18px;
+}
+.stats-title{font-size:9px;color:#666;letter-spacing:.12em;margin-bottom:10px}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.stat-row+.stat-row{border-top:1px solid rgba(0,0,0,0.06)}
+.stat-label{font-size:11px;color:#555}
+.stat-val{font-size:13px;color:#1a6640;font-weight:600;letter-spacing:.05em}
+
+.warn-box{
+  background:#fff5f5;
+  border:1px solid rgba(204,51,51,0.2);
+  border-radius:8px;padding:10px 14px;margin-bottom:20px;
+  font-size:10px;color:#cc3333;line-height:1.7;
+}
+
+.options{display:flex;flex-direction:column;gap:10px;margin-bottom:22px}
+.opt-card{
+  border:1px solid rgba(0,0,0,0.1);border-radius:10px;
+  padding:12px 14px;cursor:pointer;transition:all .18s;
+  background:#fff;
+}
+.opt-card:hover{border-color:rgba(204,51,51,0.5);background:#fff5f5}
+.opt-card.selected{border-color:rgba(192,112,112,0.6);background:#fff5f5}
+.opt-header{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.opt-radio{
+  width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,0.2);
+  flex-shrink:0;transition:all .15s;display:flex;align-items:center;justify-content:center;
+}
+.opt-card.selected .opt-radio{border-color:#cc3333;background:#c07070}
+.opt-card.selected .opt-radio::after{content:'';width:5px;height:5px;border-radius:50%;background:#fff}
+.opt-name{font-size:11px;color:#1a1a1a;font-weight:500}
+.opt-desc{font-size:9px;color:#888;line-height:1.6;padding-left:22px}
+
+.btn-reset{
+  width:100%;height:36px;border-radius:10px;
+  background:#fff5f5;
+  border:1px solid rgba(204,51,51,0.4);
+  color:#cc3333;font-family:inherit;font-size:12px;
+  font-weight:500;cursor:pointer;letter-spacing:.05em;
+  transition:all .18s;
+}
+.btn-reset:hover{background:#fff0f0}
+.btn-reset:disabled{opacity:.4;cursor:not-allowed}
+
+.confirm-layer{
+  display:none;position:fixed;inset:0;
+  background:rgba(240,240,235,0.9);
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:14px;
+}
+.confirm-layer.show{display:flex}
+.confirm-box{
+  background:#fff;border:1px solid rgba(204,51,51,0.35);box-shadow:0 8px 32px rgba(0,0,0,0.15);
+  border-radius:14px;padding:24px 22px;width:280px;text-align:center;
+}
+.confirm-title{font-size:13px;color:#cc3333;margin-bottom:8px}
+.confirm-desc{font-size:10px;color:#666;line-height:1.7;margin-bottom:18px}
+.confirm-btns{display:flex;gap:10px}
+.cbtn{
+  flex:1;height:32px;border-radius:8px;border:1px solid;
+  font-family:inherit;font-size:11px;cursor:pointer;transition:all .15s;
+}
+.cbtn-cancel{background:transparent;border-color:rgba(0,0,0,0.15);color:#999}
+.cbtn-cancel:hover{border-color:#1a6640;color:#1a6640}
+.cbtn-confirm{background:#cc3333;border-color:#cc3333;color:#fff}
+.cbtn-confirm:hover{background:#aa2222}
+
+.toast{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:rgba(126,184,154,0.12);border:1px solid rgba(126,184,154,0.35);
+  color:#1a6640;padding:6px 18px;border-radius:20px;font-size:11px;
+  opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;
+}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>词 境</h1>
+    <div class="subtitle">RESET PROGRESS · 清空学习记忆</div>
+  </div>
+  <button class="close-btn" onclick="window.close()">关闭 ×</button>
+</div>
+
+<div class="stats-box">
+  <div class="stats-title">当前学习数据</div>
+  <div style="font-size:9px;color:#888;margin-bottom:8px" id="storage-info">加载中...</div>
+  <div class="stat-row"><span class="stat-label">✅ 已认识</span><span class="stat-val" id="cnt-known">-</span></div>
+  <div class="stat-row"><span class="stat-label">❌ 待复习</span><span class="stat-val" id="cnt-unknown">-</span></div>
+  <div class="stat-row"><span class="stat-label">⭐ 已收藏</span><span class="stat-val" id="cnt-favs">-</span></div>
+  <div class="stat-row"><span class="stat-label">🔥 连续学习</span><span class="stat-val" id="cnt-streak">-</span></div>
+  <div class="stat-row"><span class="stat-label">📅 今日已学</span><span class="stat-val" id="cnt-today">-</span></div>
+</div>
+
+<div class="warn-box">⚠ 清空后无法恢复。键位设置不受影响。</div>
+
+<div class="options">
+  <div class="opt-card selected" data-mode="progress" onclick="selectMode(this)">
+    <div class="opt-header">
+      <div class="opt-radio"></div>
+      <div class="opt-name">清空所有学习记录</div>
+    </div>
+    <div class="opt-desc">清空认识、不认识、收藏、复习队列、连胜记录、今日计数</div>
+  </div>
+  <div class="opt-card" data-mode="favs" onclick="selectMode(this)">
+    <div class="opt-header">
+      <div class="opt-radio"></div>
+      <div class="opt-name">仅清空收藏</div>
+    </div>
+    <div class="opt-desc">保留认识/不认识记录和其他进度</div>
+  </div>
+  <div class="opt-card" data-mode="all" onclick="selectMode(this)">
+    <div class="opt-header">
+      <div class="opt-radio"></div>
+      <div class="opt-name">全部清空（重新开始）</div>
+    </div>
+    <div class="opt-desc">清空所有学习记录，包括收藏、连胜、今日计数</div>
+  </div>
+</div>
+
+<button class="btn-reset" onclick="showConfirm()">清空所选数据</button>
+
+<!-- Confirm overlay -->
+<div class="confirm-layer" id="confirm-layer">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">确认清空？</div>
+    <div class="confirm-desc" id="confirm-desc"></div>
+    <div class="confirm-btns">
+      <button class="cbtn cbtn-cancel" onclick="hideConfirm()">取消</button>
+      <button class="cbtn cbtn-confirm" onclick="doReset()">确认清空</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SAVE_KEY = 'ielts_state_v4';
+const _fs2   = (typeof require !== 'undefined') ? require('fs')   : null;
+const _path3 = (typeof require !== 'undefined') ? require('path') : null;
+const _pfile = (_fs2 && _path3) ? _path3.join(process.env.APPDATA || '', 'ielts-widget', 'progress.json') : null;
+if (_fs2 && _pfile) { try { _fs2.mkdirSync(_path3.dirname(_pfile), {recursive:true}); } catch(e) {} }
+function _rp() { if (!_fs2||!_pfile) return {}; try { return JSON.parse(_fs2.readFileSync(_pfile,'utf8')); } catch(e) { return {}; } }
+function _wp(o) { if (!_fs2||!_pfile) return; try { _fs2.writeFileSync(_pfile, JSON.stringify(o), 'utf8'); } catch(e) {} }
+
+let selectedMode = 'progress';
+
+function loadStats() {
+  try {
+    const d = _rp();
+    document.getElementById('cnt-known').textContent   = (d.known   || []).length;
+    document.getElementById('cnt-unknown').textContent = (d.unknown || []).length;
+    document.getElementById('cnt-favs').textContent    = (d.favs    || []).length;
+    document.getElementById('cnt-streak').textContent  = (d.streak  || 0) + ' 次';
+    document.getElementById('cnt-today').textContent   = ((d.dailyStats || {}).count || 0) + ' 词';
+    document.getElementById('storage-info').textContent = Object.keys(d).length
+      ? '✓ 已读取学习数据'
+      : '⚠ 暂无学习数据（可能尚未开始学习）';
+  } catch(e) {
+    document.getElementById('storage-info').textContent = '读取失败: ' + e.message;
+  }
+}
+
+function selectMode(el) {
+  document.querySelectorAll('.opt-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = el.dataset.mode;
+}
+
+const modeDesc = {
+  progress: '将清空「已认识」「不认识」「收藏」列表、间隔复习队列、连胜记录和今日计数。\n键位设置不受影响。',
+  favs:     '将清空所有收藏单词。\n认识/不认识记录和其他进度保留。',
+  all:      '将清空所有学习记录：认识、不认识、收藏、连胜、今日计数。\n相当于全新开始。',
+};
+
+function showConfirm() {
+  document.getElementById('confirm-desc').textContent = modeDesc[selectedMode];
+  document.getElementById('confirm-layer').classList.add('show');
+}
+function hideConfirm() {
+  document.getElementById('confirm-layer').classList.remove('show');
+}
+
+function doReset() {
+  try {
+    const d = _rp();
+    if (selectedMode === 'progress') {
+      d.known   = [];
+      d.unknown = [];
+      d.srQueue = [];
+      d.favs    = [];
+      d.streak  = 0;
+      d.dailyStats = { date: '', count: 0, dayStreak: 0 };
+      _wp(d);
+    } else if (selectedMode === 'favs') {
+      d.favs = [];
+      _wp(d);
+    } else {
+      // all
+      _wp({});
+      hideConfirm();
+      loadStats();
+      showToast('✓ 已全部清空，重启词境生效');
+      return;
+    }
+  } catch(e) {}
+  hideConfirm();
+  loadStats();
+  showToast('✓ 已清空，重启词境生效');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+loadStats();
+</script>
+</body>
+</html>

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境 · 键位设置</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Serif SC","STSong",serif;
+  background:#f5f4f0;color:#1a1a1a;
+  width:360px;min-height:100vh;
+  padding:20px 16px 32px;
+  -webkit-font-smoothing:antialiased;
+}
+h1{
+  font-size:14px;font-weight:600;letter-spacing:.2em;
+  color:#1a6640;margin-bottom:4px;
+}
+.subtitle{ font-size:10px;color:#888;letter-spacing:.08em;margin-bottom:20px; }
+.section-title{
+  font-size:9px;color:#666;letter-spacing:.14em;
+  text-transform:uppercase;margin:16px 0 8px;
+  border-bottom:1px solid rgba(0,0,0,0.1);padding-bottom:4px;
+}
+.key-row{
+  display:flex;align-items:center;gap:10px;
+  padding:7px 10px;border-radius:8px;
+  border:1px solid rgba(0,0,0,0.12);
+  margin-bottom:5px;transition:border-color .15s;
+  background:#fff;
+}
+.key-row:hover{ border-color:#1a6640; }
+.key-label{ flex:1;font-size:11px;color:#333; }
+.key-desc{ font-size:9px;color:#888;width:60px;text-align:right;flex-shrink:0; }
+.key-input{
+  width:90px;height:26px;
+  background:#f0efeb;
+  border:1px solid rgba(0,0,0,0.18);
+  border-radius:6px;padding:0 8px;
+  font-size:11px;color:#1a1a1a;
+  font-family:"EB Garamond",serif;
+  outline:none;cursor:pointer;text-align:center;
+  transition:all .15s;
+}
+.key-input:focus{
+  border-color:#1a6640;
+  background:#e8f5ee;
+  color:#1a6640;
+}
+.key-input.listening{
+  border-color:#1a6640;
+  background:#e8f5ee;
+  color:#1a6640;
+  animation:pulse 1s infinite;
+}
+@keyframes pulse{
+  0%,100%{ box-shadow:0 0 0 0 rgba(26,102,64,0.25); }
+  50%{ box-shadow:0 0 0 4px rgba(126,184,154,0); }
+}
+.key-reset{
+  width:18px;height:18px;border-radius:50%;
+  border:1px solid rgba(0,0,0,0.15);background:transparent;
+  color:#888;font-size:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.key-reset:hover{ color:#cc3333;border-color:rgba(204,51,51,0.4); }
+.hint{
+  font-size:9px;color:#888;text-align:center;
+  margin-top:6px;margin-bottom:16px;
+  font-style:italic;
+}
+.actions{
+  display:flex;gap:8px;margin-top:20px;
+}
+.btn{
+  flex:1;height:34px;border-radius:10px;border:1px solid;
+  font-family:"Noto Serif SC",serif;font-size:11px;font-weight:500;
+  cursor:pointer;letter-spacing:.05em;transition:all .18s;
+}
+.btn-save{
+  background:rgba(126,184,154,.08);border-color:rgba(126,184,154,.4);color:#1a6640;
+}
+.btn-save:hover{ background:#155233; }
+.btn-reset-all{
+  background:#fff;border-color:rgba(204,51,51,0.35);color:#cc3333;
+}
+.btn-reset-all:hover{ background:#fff0f0; }
+.toast{
+  position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+  background:#e8f5ee;border:1px solid rgba(26,102,64,0.3);
+  color:#1a6640;padding:6px 18px;border-radius:20px;font-size:11px;
+  opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;
+}
+.toast.show{ opacity:1; }
+.conflict-warn{
+  font-size:9px;color:#cc3333;margin-top:3px;display:none;
+}
+.conflict-warn.show{ display:block; }
+</style>
+</head>
+<body>
+
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0">
+  <div>
+    <h1>词 境</h1>
+    <div class="subtitle">KEYBOARD SETTINGS · 键位自定义</div>
+  </div>
+  <button onclick="window.close()" style="background:transparent;border:1px solid rgba(204,51,51,0.35);color:#cc3333;border-radius:6px;padding:4px 10px;font-size:10px;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(192,112,112,0.1)';this.style.color='#c07070'" onmouseout="this.style.background='transparent';this.style.color='#905060'">关闭 ×</button>
+</div>
+<div style="font-size:9px;color:#888;margin:6px 0 16px;line-height:1.6">修改键位后点「保存并生效」，重新打开词境即可生效。<br>此文件位于 resources/app/keybindings.html，可直接双击打开。</div>
+
+<div class="section-title">学习操作</div>
+
+<div id="key-bindings"></div>
+<div class="conflict-warn" id="conflict-warn">⚠ 存在重复键位，请检查</div>
+<div class="hint">点击输入框后按任意键完成绑定 · 支持组合键（Ctrl/Shift/Alt）</div>
+
+<div class="actions">
+  <button class="btn btn-reset-all" onclick="resetAll()">恢复默认</button>
+  <button class="btn btn-save" onclick="saveKeys()">保存并生效</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'ielts_keybindings';
+
+// Default keybindings: action -> array of keys
+const DEFAULTS = {
+  reveal:   { label:'翻开/收起答案', keys:['Space','Enter'],       desc:'翻面' },
+  known:    { label:'认识 → 下一张',  keys:['ArrowRight','l'],      desc:'认识' },
+  unknown:  { label:'不认识 → 下一张',keys:['ArrowLeft','h'],       desc:'不认识' },
+  skip:     { label:'跳过（不标记）', keys:['ArrowDown','s'],       desc:'跳过' },
+  prev:     { label:'上一张',         keys:['Backspace','z'],        desc:'上一张' },
+  fav:      { label:'收藏/取消收藏',  keys:['f'],                   desc:'收藏' },
+  speak:    { label:'朗读单词',       keys:['p'],                   desc:'朗读' },
+  mini:     { label:'迷你模式切换',   keys:['m'],                   desc:'迷你' },
+};
+
+let bindings = {};
+
+function loadBindings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+    Object.keys(DEFAULTS).forEach(k => {
+      bindings[k] = saved[k] ? [...saved[k]] : [...DEFAULTS[k].keys];
+    });
+  } catch(e) {
+    Object.keys(DEFAULTS).forEach(k => { bindings[k] = [...DEFAULTS[k].keys]; });
+  }
+}
+
+function keyDisplay(key) {
+  const map = {
+    ' ':'Space','ArrowRight':'→','ArrowLeft':'←','ArrowDown':'↓','ArrowUp':'↑',
+    'Backspace':'⌫','Enter':'Enter','Escape':'Esc',
+    'Control':'Ctrl','Shift':'Shift','Alt':'Alt',
+  };
+  return map[key] || key;
+}
+
+function keyId(e) {
+  // Build a canonical key string
+  const mods = [];
+  if (e.ctrlKey)  mods.push('Ctrl');
+  if (e.shiftKey) mods.push('Shift');
+  if (e.altKey)   mods.push('Alt');
+  let k = e.key;
+  if (k === 'Control' || k === 'Shift' || k === 'Alt') return null; // modifier only
+  if (k === ' ') k = 'Space';
+  return mods.length ? mods.join('+') + '+' + k : k;
+}
+
+function renderBindings() {
+  const container = document.getElementById('key-bindings');
+  container.innerHTML = '';
+  Object.keys(DEFAULTS).forEach(action => {
+    const def = DEFAULTS[action];
+    const keys = bindings[action];
+
+    const row = document.createElement('div');
+    row.className = 'key-row';
+    row.innerHTML = `
+      <div class="key-label">${def.label}</div>
+      ${keys.map((k,i) => `
+        <input class="key-input" data-action="${action}" data-idx="${i}"
+          value="${keyDisplay(k)}" readonly
+          title="点击后按键设置">
+        <button class="key-reset" data-action="${action}" data-idx="${i}" title="重置">↺</button>
+      `).join('')}
+    `;
+    container.appendChild(row);
+  });
+
+  // Bind events
+  container.querySelectorAll('.key-input').forEach(inp => {
+    inp.addEventListener('click', function() {
+      document.querySelectorAll('.key-input.listening').forEach(x => x.classList.remove('listening'));
+      this.classList.add('listening');
+      this.value = '…按键…';
+    });
+    inp.addEventListener('keydown', function(e) {
+      e.preventDefault();
+      if (!this.classList.contains('listening')) return;
+      const k = keyId(e);
+      if (!k) return;
+      const action = this.dataset.action;
+      const idx = parseInt(this.dataset.idx);
+      bindings[action][idx] = k === 'Space' ? ' ' : k;
+      this.value = keyDisplay(k);
+      this.classList.remove('listening');
+      checkConflicts();
+    });
+  });
+
+  container.querySelectorAll('.key-reset').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const action = this.dataset.action;
+      const idx = parseInt(this.dataset.idx);
+      bindings[action][idx] = DEFAULTS[action].keys[idx];
+      renderBindings();
+      checkConflicts();
+    });
+  });
+}
+
+function checkConflicts() {
+  const seen = {};
+  let conflict = false;
+  Object.keys(bindings).forEach(action => {
+    bindings[action].forEach(k => {
+      const key = k.toLowerCase();
+      if (seen[key] && seen[key] !== action) conflict = true;
+      seen[key] = action;
+    });
+  });
+  const warn = document.getElementById('conflict-warn');
+  warn.classList.toggle('show', conflict);
+  return !conflict;
+}
+
+function saveKeys() {
+  if (!checkConflicts()) {
+    showToast('存在重复键位，请先修复');
+    return;
+  }
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(bindings));
+    showToast('✓ 已保存，重启应用后生效');
+  } catch(e) {
+    showToast('保存失败');
+  }
+}
+
+function resetAll() {
+  Object.keys(DEFAULTS).forEach(k => { bindings[k] = [...DEFAULTS[k].keys]; });
+  renderBindings();
+  checkConflicts();
+  showToast('已恢复默认键位');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// Close listening on outside click
+document.addEventListener('click', e => {
+  if (!e.target.classList.contains('key-input')) {
+    document.querySelectorAll('.key-input.listening').forEach(x => {
+      const action = x.dataset.action;
+      const idx = parseInt(x.dataset.idx);
+      x.value = keyDisplay(bindings[action][idx]);
+      x.classList.remove('listening');
+    });
+  }
+});
+
+loadBindings();
+renderBindings();
+</script>
+</body>
+</html>

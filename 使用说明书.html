@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境 · 使用说明书</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif;
+  background:#f5f4f0;color:#2a2a2a;line-height:1.8;
+  max-width:680px;margin:0 auto;padding:24px 20px 60px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* Cover */
+.cover{
+  text-align:center;padding:32px 0 20px;
+  border-bottom:2px solid rgba(26,102,64,0.15);margin-bottom:28px;
+}
+.cover h1{font-size:22px;font-weight:700;color:#1a6640;letter-spacing:.15em;margin-bottom:6px;}
+.cover .tagline{font-size:11px;color:#888;letter-spacing:.1em;}
+.cover .badge{
+  display:inline-block;margin-top:12px;padding:5px 14px;border-radius:20px;
+  font-size:10px;font-weight:600;letter-spacing:.08em;
+  background:rgba(26,102,64,0.08);color:#1a6640;border:1px solid rgba(26,102,64,0.2);
+}
+
+/* TOC */
+.toc{
+  background:#fff;border-radius:10px;padding:16px 20px;margin-bottom:24px;
+  border:1px solid rgba(0,0,0,0.06);box-shadow:0 1px 3px rgba(0,0,0,0.03);
+}
+.toc h2{font-size:11px;color:#888;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;}
+.toc a{
+  display:block;font-size:12px;color:#1a6640;text-decoration:none;
+  padding:3px 0;transition:color .15s;
+}
+.toc a:hover{color:#0d4020;}
+
+/* Section */
+h2:not(.toc h2){
+  font-size:15px;font-weight:700;color:#1a6640;letter-spacing:.06em;
+  margin:32px 0 10px;padding-bottom:6px;
+  border-bottom:1px solid rgba(0,0,0,0.06);
+}
+h3{font-size:12px;color:#555;font-weight:600;margin:16px 0 6px;}
+p{font-size:12px;margin-bottom:8px;color:#444;}
+code{
+  background:rgba(0,0,0,0.04);padding:1px 6px;border-radius:4px;
+  font-family:Consolas,monospace;font-size:11px;color:#c04040;
+}
+
+/* KBD */
+.kbd-row{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+kbd{
+  display:inline-block;padding:3px 8px;border-radius:5px;
+  font-family:Consolas,monospace;font-size:10px;font-weight:600;
+  background:#fff;border:1px solid rgba(0,0,0,0.15);
+  color:#333;box-shadow:0 1px 2px rgba(0,0,0,0.08);
+  letter-spacing:.04em;white-space:nowrap;
+}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:11px;}
+thead th{
+  background:rgba(26,102,64,0.06);color:#1a6640;font-weight:700;
+  text-align:left;padding:7px 10px;border-bottom:2px solid rgba(26,102,64,0.2);
+  font-size:10px;letter-spacing:.06em;
+}
+tbody td{padding:6px 10px;border-bottom:1px solid rgba(0,0,0,0.05);}
+tbody tr:nth-child(even){background:rgba(0,0,0,0.01);}
+
+/* Callout */
+.callout{
+  margin:12px 0;padding:10px 14px;border-radius:8px;font-size:11px;
+  border-left:3px solid;
+}
+.callout.tip{background:rgba(26,102,64,0.04);border-color:#1a6640;color:#1a6640;}
+.callout.warn{background:rgba(192,100,64,0.04);border-color:#c07040;color:#a05030;}
+.callout.info{background:rgba(64,128,192,0.04);border-color:#4a80c0;color:#3a6090;}
+
+/* List */
+ul,ol{padding-left:20px;margin:6px 0 12px;}
+li{font-size:11px;color:#444;margin-bottom:3px;}
+li strong{color:#1a1a1a;}
+
+/* Card */
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 14px;}
+.feat-card{
+  background:#fff;border-radius:8px;padding:10px 12px;
+  border:1px solid rgba(0,0,0,0.05);box-shadow:0 1px 2px rgba(0,0,0,0.03);
+}
+.feat-card .emoji{font-size:18px;margin-bottom:2px;}
+.feat-card h4{font-size:11px;color:#1a6640;margin-bottom:2px;}
+.feat-card p{font-size:10px;color:#666;margin:0;}
+
+/* Theme colors */
+.swatches{display:flex;gap:8px;margin:8px 0;}
+.swatch{
+  width:28px;height:28px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);
+  box-shadow:0 1px 3px rgba(0,0,0,0.1);position:relative;
+}
+.swatch::after{
+  content:attr(data-label);position:absolute;top:32px;left:50%;
+  transform:translateX(-50%);font-size:9px;color:#666;white-space:nowrap;
+}
+
+/* Steps */
+.step{display:flex;gap:12px;align-items:flex-start;margin:10px 0;}
+.step-num{
+  flex-shrink:0;width:24px;height:24px;border-radius:50%;
+  background:#1a6640;color:#fff;font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+}
+.step-body{font-size:11px;color:#444;}
+.step-body code{font-size:10px;}
+
+/* Divider */
+hr{border:none;border-top:1px solid rgba(0,0,0,0.06);margin:20px 0;}
+
+/* Footer */
+.footer{
+  text-align:center;margin-top:32px;padding-top:16px;
+  border-top:2px solid rgba(26,102,64,0.15);
+  font-size:10px;color:#999;letter-spacing:.05em;
+}
+
+/* Back to top */
+.back-top{
+  position:fixed;bottom:20px;right:20px;width:32px;height:32px;
+  border-radius:50%;background:#1a6640;color:#fff;border:none;
+  cursor:pointer;font-size:16px;line-height:32px;text-align:center;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);opacity:0;transition:opacity .3s;
+}
+.back-top.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>词 境</h1>
+  <p class="tagline">IELTS 桌面悬浮单词卡片 · 使用说明书</p>
+  <span class="badge">v1.0 · 8079词 · Windows</span>
+</div>
+
+<div class="toc">
+  <h2>📋 目录</h2>
+  <a href="#install">1. 安装与启动</a>
+  <a href="#basic">2. 基础操作</a>
+  <a href="#keys">3. 快捷键一览</a>
+  <a href="#theme">4. 主题切换</a>
+  <a href="#stats">5. 学习统计</a>
+  <a href="#vocab">6. 词库管理</a>
+  <a href="#keybind">7. 自定义快捷键</a>
+  <a href="#reset">8. 清空学习记录</a>
+  <a href="#faq">9. 常见问题</a>
+</div>
+
+<!-- 1 -->
+<h2 id="install">1. 安装与启动</h2>
+
+<div class="step">
+  <div class="step-num">1</div>
+  <div class="step-body">解压下载的 zip 包到任意目录（桌面、D盘都行）</div>
+</div>
+<div class="step">
+  <div class="step-num">2</div>
+  <div class="step-body">进入文件夹，双击 <code>启动词境.vbs</code></div>
+</div>
+<div class="step">
+  <div class="step-num">3</div>
+  <div class="step-body">屏幕右上角出现半透明单词卡片 → 开始学习</div>
+</div>
+
+<div class="callout tip">退出请点击卡片右上角 ✕ 按钮，或右键任务栏图标退出。</div>
+
+<!-- 2 -->
+<h2 id="basic">2. 基础操作</h2>
+
+<div class="feat-grid">
+  <div class="feat-card">
+    <div class="emoji">🃏</div>
+    <h4>翻转卡片</h4>
+    <p>点击卡片正面 · 或按空格键</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">✓</div>
+    <h4>标记认识</h4>
+    <p>按 L / → · 不再出现, 连胜+1</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">✗</div>
+    <h4>标记不认识</h4>
+    <p>按 H / ← · 60秒后自动复现</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">★</div>
+    <h4>收藏单词</h4>
+    <p>点卡片上的 ☆ 收藏, 变 ★ 已收藏</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">🔊</div>
+    <h4>朗读发音</h4>
+    <p>按 P 键 · 系统语音朗读</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">🖱</div>
+    <h4>迷你模式</h4>
+    <p>按 M 键缩小为一行</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">🕵️</div>
+    <h4>老板键</h4>
+    <p>Ctrl+Shift+H 瞬间消失</p>
+  </div>
+  <div class="feat-card">
+    <div class="emoji">◐</div>
+    <h4>透明度</h4>
+    <p>拖动顶部滑块调节</p>
+  </div>
+</div>
+
+<!-- 3 -->
+<h2 id="keys">3. 快捷键一览</h2>
+
+<table>
+  <thead><tr><th>功能</th><th>按键</th></tr></thead>
+  <tbody>
+    <tr><td>翻转卡片</td><td><kbd>Space</kbd> <kbd>↑</kbd> 或点击卡片</td></tr>
+    <tr><td>标记「认识」</td><td><kbd>L</kbd> <kbd>→</kbd></td></tr>
+    <tr><td>标记「不认识」</td><td><kbd>H</kbd> <kbd>←</kbd></td></tr>
+    <tr><td>跳过</td><td><kbd>S</kbd> <kbd>↓</kbd></td></tr>
+    <tr><td>上一张</td><td><kbd>Backspace</kbd> <kbd>Z</kbd></td></tr>
+    <tr><td>朗读</td><td><kbd>P</kbd></td></tr>
+    <tr><td>迷你模式</td><td><kbd>M</kbd></td></tr>
+    <tr><td>单词列表</td><td><kbd>W</kbd></td></tr>
+    <tr><td>关闭弹窗</td><td><kbd>Esc</kbd></td></tr>
+    <tr><td><strong>老板键</strong></td><td><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd></td></tr>
+  </tbody>
+</table>
+
+<div class="callout info">快捷键可在「改键位」工具中完全自定义。</div>
+
+<!-- 4 -->
+<h2 id="theme">4. 主题切换</h2>
+
+<p>点击顶部 <kbd>◑</kbd> 按钮展开主题面板，6 套可选：</p>
+
+<table>
+  <thead><tr><th>名称</th><th>风格</th><th>适用场景</th></tr></thead>
+  <tbody>
+    <tr><td>暗绿（默认）</td><td>护眼森林绿</td><td>全天候</td></tr>
+    <tr><td>暗蓝</td><td>深夜蓝调</td><td>低光环境</td></tr>
+    <tr><td>暗紫</td><td>低调紫</td><td>写代码时</td></tr>
+    <tr><td>暖琥珀</td><td>复古暖色</td><td>下午提神</td></tr>
+    <tr><td>玫瑰</td><td>柔和粉</td><td>休闲</td></tr>
+    <tr><td>浅色</td><td>白天模式</td><td>明亮办公室</td></tr>
+  </tbody>
+</table>
+
+<!-- 5 -->
+<h2 id="stats">5. 学习统计</h2>
+
+<p>顶部栏实时显示：</p>
+<ul>
+  <li><strong>📊 进度条</strong> — 已完成百分比 · 认识数/总数</li>
+  <li><strong>🔥 连胜</strong> — 连续认识次数（中断则清零）</li>
+  <li><strong>📅 每日统计</strong> — 今日学习量</li>
+</ul>
+
+<h3>间隔复习</h3>
+<p>标记为「不认识」的词<strong>60 秒后自动回到卡片流</strong>中，确保真正记住。</p>
+
+<h3>完成一轮后</h3>
+<div class="callout tip">
+  出现完成页面，可选：<br>
+  <strong>复习不认识</strong> · <strong>复习收藏</strong> · <strong>重新开始</strong>
+</div>
+
+<!-- 6 -->
+<h2 id="vocab">6. 词库管理</h2>
+
+<p>双击文件夹里的 <code>manage-vocab.bat</code> 打开词库管理工具。</p>
+
+<h3>🔍 搜索词库</h3>
+<ol>
+  <li>点顶部「🔍 搜索」标签</li>
+  <li>输入关键词（英文或中文均可）</li>
+  <li>点「搜索」按钮或按回车</li>
+  <li>可按分类过滤：全部 / 核心 / 高频 / 基础 / 进阶 / 自定义</li>
+  <li>每个结果行有「删除」按钮，屏蔽不需要的词</li>
+  <li>点击单词可查看详情弹窗</li>
+</ol>
+
+<h3>➕ 添加单词</h3>
+<ol>
+  <li>点「＋ 添加」标签</li>
+  <li>填写<strong>英文单词</strong>和<strong>中文释义</strong>（必填）</li>
+  <li>可选填：词性、音标、英文释义、例句</li>
+  <li>选择分级（核心 / 高频 / 基础 / 进阶）</li>
+  <li>点「添加单词」</li>
+</ol>
+<div class="callout info">添加后需重启词境才能看到新单词。</div>
+
+<h3>↑ 批量导入</h3>
+<p>每行一个词，格式：</p>
+<code>persevere,坚持；不屈不挠,h</code>
+<p style="font-size:10px;color:#888;margin-top:4px">分级可选：c(核心) / h(高频) / b(基础) / a(进阶)</p>
+
+<h3>↓ 导出词库</h3>
+<p>支持 CSV（Excel可打开）和 JSON 格式，可保存到文件或复制到剪贴板。</p>
+
+<!-- 7 -->
+<h2 id="keybind">7. 自定义快捷键</h2>
+
+<p>双击文件夹里的 <code>改键位.bat</code>：</p>
+<ul>
+  <li>每个功能可绑定<strong>多个按键</strong></li>
+  <li>点击输入框 → 按下你想要的快捷键</li>
+  <li>修改后<strong>自动保存</strong>，立即生效</li>
+</ul>
+
+<!-- 8 -->
+<h2 id="reset">8. 清空学习记录</h2>
+
+<p>双击 <code>清空记忆.bat</code>：</p>
+
+<table>
+  <thead><tr><th>选项</th><th>清除内容</th></tr></thead>
+  <tbody>
+    <tr><td>清空学习进度</td><td>认识/不认识/收藏/连胜/今日计数</td></tr>
+    <tr><td>仅清空收藏</td><td>只清除收藏列表</td></tr>
+    <tr><td>全部清空</td><td>回到全新状态</td></tr>
+  </tbody>
+</table>
+
+<div class="callout warn">⚠ 操作不可撤销，请确认后执行。</div>
+
+<!-- 9 -->
+<h2 id="faq">9. 常见问题</h2>
+
+<table>
+  <thead><tr><th>问题</th><th>解答</th></tr></thead>
+  <tbody>
+    <tr><td>打开后看不到窗口？</td><td>检查右上角；尝试按 <kbd>Ctrl+Shift+H</kbd> 切换显示</td></tr>
+    <tr><td>添加的单词没出现？</td><td>添加后需要<strong>重启词境</strong></td></tr>
+    <tr><td>进度丢失了？</td><td>检查 <code>AppData\Roaming\ielts-widget\progress.json</code> 是否被删</td></tr>
+    <tr><td>如何彻底卸载？</td><td>删除文件夹即可；清理记录删 <code>ielts-widget</code> 目录</td></tr>
+    <tr><td>支持 Mac 吗？</td><td>当前仅 Windows，Mac 用户可自行打包源码</td></tr>
+    <tr><td>切换词库分类后词太少？</td><td>选择「全部」分类包含完整 8079 词</td></tr>
+    <tr><td>朗读没声音？</td><td>检查系统语音设置，确保有英文语音包</td></tr>
+  </tbody>
+</table>
+
+<hr>
+
+<div class="footer">
+  <p>词境 v1.0 · 8079 IELTS 词汇 · MIT 协议</p>
+  <p>支持作者：爱发电搜「词境」</p>
+</div>
+
+<button class="back-top" id="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+window.addEventListener('scroll', function(){
+  document.getElementById('back-top').classList.toggle('show', window.scrollY > 400);
+});
+</script>
+
+</body>
+</html>

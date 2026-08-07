@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境 · 词库管理</title>
+<script src="vocab.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:"Noto Serif SC","STSong",serif;
+  background:#f5f4f0;color:#1a1a1a;width:520px;min-height:100vh;
+  padding:20px 16px 32px;-webkit-font-smoothing:antialiased;
+}
+h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-bottom:4px;}
+.subtitle{font-size:10px;color:#888;letter-spacing:.08em;margin-bottom:20px;}
+
+.tabs{display:flex;gap:6px;margin-bottom:16px;}
+.tab{padding:6px 14px;border-radius:6px;border:1px solid rgba(0,0,0,0.15);font-size:11px;cursor:pointer;background:#fff;color:#555;transition:all .15s;letter-spacing:.05em;}
+.tab.active{background:#1a6640;color:#fff;border-color:#1a6640;}
+.panel{display:none;}
+.panel.active{display:block;}
+
+.field-group{margin-bottom:12px;}
+.field-group label{font-size:10px;color:#666;letter-spacing:.08em;display:block;margin-bottom:4px;}
+.field-group input,.field-group select,.field-group textarea{width:100%;padding:8px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:6px;font-size:12px;font-family:inherit;background:#fff;color:#1a1a1a;outline:none;transition:border-color .15s;}
+.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:#1a6640;}
+.field-group textarea{resize:vertical;min-height:40px;}
+.row2{display:flex;gap:8px;}
+.row2 .field-group{flex:1;}
+
+.btn{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:12px;font-family:inherit;font-weight:600;letter-spacing:.05em;transition:all .15s;}
+.btn-primary{background:#1a6640;color:#fff;}
+.btn-primary:hover{background:#155534;}
+.btn-secondary{background:#fff;color:#555;border:1px solid rgba(0,0,0,0.15);}
+.btn-secondary:hover{background:#f0f0f0;}
+.btn-danger{background:#fff;color:#c04040;border:1px solid rgba(192,64,64,0.3);}
+.btn-danger:hover{background:rgba(192,64,64,0.06);}
+.btn-sm{padding:4px 10px;font-size:10px;border-radius:5px;}
+
+.search-bar{display:flex;gap:6px;margin-bottom:10px;}
+.search-bar input{flex:1;padding:8px 10px;border:1px solid rgba(0,0,0,0.15);border-radius:6px;font-size:12px;font-family:inherit;outline:none;}
+.search-bar input:focus{border-color:#1a6640;}
+.search-bar select{padding:6px 8px;border:1px solid rgba(0,0,0,0.15);border-radius:6px;font-size:11px;font-family:inherit;background:#fff;}
+
+.list-wrap{border:1px solid rgba(0,0,0,0.1);border-radius:8px;overflow:hidden;max-height:420px;overflow-y:auto;background:#fff;}
+.word-row{display:flex;align-items:center;gap:8px;padding:7px 10px;border-bottom:1px solid rgba(0,0,0,0.06);font-size:12px;cursor:default;}
+.word-row:last-child{border-bottom:none;}
+.word-row:hover{background:#f8f8f8;}
+.wr-word{font-weight:600;min-width:100px;color:#1a1a1a;cursor:pointer;}
+.wr-word:hover{color:#1a6640;text-decoration:underline;}
+.wr-cn{flex:1;color:#555;font-size:11px;}
+.wr-ph{color:#999;font-size:10px;min-width:70px;}
+.wr-tag{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600;letter-spacing:.06em;}
+.wr-tag.c{background:rgba(201,169,110,.15);color:#a07820;}
+.wr-tag.h{background:rgba(126,184,154,.15);color:#1a6640;}
+.wr-tag.b{background:rgba(122,171,204,.15);color:#1a5080;}
+.wr-tag.a{background:rgba(192,112,112,.15);color:#903030;}
+.wr-actions{display:flex;gap:4px;flex-shrink:0;}
+.wr-btn{padding:3px 7px;font-size:10px;border-radius:4px;background:none;cursor:pointer;font-family:inherit;transition:all .12s;border:1px solid transparent;}
+.wr-btn.del{color:#c04040;border-color:rgba(192,64,64,0.25);}
+.wr-btn.del:hover{background:rgba(192,64,64,0.08);}
+.wr-btn.edit{color:#1a6640;border-color:rgba(26,102,64,0.25);}
+.wr-btn.edit:hover{background:rgba(26,102,64,0.06);}
+.wr-btn.restore{color:#1a5080;border-color:rgba(26,80,128,0.25);}
+.wr-btn.restore:hover{background:rgba(26,80,128,0.06);}
+.empty{text-align:center;color:#aaa;font-size:11px;padding:20px;}
+
+/* Detail popup */
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.3);z-index:99;display:none;}
+.detail-overlay.show{display:flex;align-items:center;justify-content:center;}
+.detail-card{background:#fff;border-radius:12px;padding:20px;width:420px;max-height:80vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,0.15);}
+.detail-card h3{font-size:18px;color:#1a1a1a;margin-bottom:4px;}
+.detail-card .ph{font-size:13px;color:#888;margin-bottom:8px;}
+.detail-card .def{font-size:13px;color:#333;margin-bottom:6px;line-height:1.6;}
+.detail-card .def-label{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.1em;}
+.detail-card .ex{font-size:12px;color:#555;font-style:italic;margin-top:6px;padding:8px;background:#f8f8f8;border-radius:6px;}
+.detail-overlay .close{position:absolute;top:10px;right:14px;font-size:18px;cursor:pointer;color:#888;}
+
+.stats-bar{display:flex;gap:12px;padding:8px 0;margin-bottom:10px;font-size:10px;color:#666;letter-spacing:.04em;}
+.stats-bar span{color:#1a6640;font-weight:700;}
+.result-info{font-size:10px;color:#888;margin-bottom:8px;}
+
+.import-area textarea{width:100%;height:160px;resize:vertical;padding:10px;border:1px solid rgba(0,0,0,0.15);border-radius:6px;font-size:11px;font-family:monospace;background:#fff;outline:none;line-height:1.6;}
+.import-area textarea:focus{border-color:#1a6640;}
+.import-hint{font-size:10px;color:#888;margin:6px 0 12px;line-height:1.6;}
+.import-preview{margin-top:10px;font-size:10px;color:#555;border:1px solid rgba(0,0,0,0.1);border-radius:6px;padding:8px 10px;background:#fafafa;max-height:100px;overflow-y:auto;}
+
+/* Edit panel */
+.pill-row{display:flex;gap:8px;margin-bottom:10px;}
+.pill{padding:4px 12px;border-radius:12px;font-size:10px;cursor:pointer;border:1px solid rgba(0,0,0,0.12);background:#fff;color:#555;transition:all .12s;}
+.pill.active{background:#1a6640;color:#fff;border-color:#1a6640;}
+
+.match-hl{background:rgba(255,235,100,0.4);padding:1px 2px;border-radius:2px;}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;padding:8px 18px;border-radius:20px;font-size:11px;opacity:0;transition:all .25s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.batch-bar{display:flex;gap:6px;align-items:center;margin-bottom:8px;padding:6px 8px;background:rgba(0,0,0,0.02);border-radius:6px;}
+.wr-check{flex-shrink:0;width:14px;height:14px;cursor:pointer;accent-color:#1a6640;}
+.cat-sel{padding:3px 6px;border:1px solid rgba(0,0,0,0.12);border-radius:5px;font-size:10px;font-family:inherit;background:#fff;color:#555;cursor:pointer;}
+.cat-sel:focus{border-color:#1a6640;outline:none;}
+</style>
+</head>
+<body>
+<h1>词库管理 <span id="vocab-status" style="font-size:10px;color:#888;font-weight:400;letter-spacing:0"></span></h1>
+<p class="subtitle">添加自定义单词 · 导入批量词汇 · 全库搜索与编辑</p>
+
+<div class="tabs">
+  <button class="tab active" data-tab="add" onclick="switchTab('add')">＋ 添加</button>
+  <button class="tab" data-tab="import" onclick="switchTab('import')">↑ 导入</button>
+  <button class="tab" data-tab="search" onclick="switchTab('search')">🔍 搜索</button>
+  <button class="tab" data-tab="manage" onclick="switchTab('manage')">☰ 管理</button>
+  <button class="tab" data-tab="export" onclick="switchTab('export')">↓ 导出</button>
+</div>
+
+<!-- ADD -->
+<div class="panel active" id="panel-add">
+  <div class="row2">
+    <div class="field-group"><label>英文单词 *</label><input type="text" id="add-word" placeholder="e.g. persevere" autocomplete="off" spellcheck="false"/></div>
+    <div class="field-group"><label>词性</label><input type="text" id="add-pos" placeholder="v. / n. / adj." autocomplete="off"/></div>
+  </div>
+  <div class="field-group"><label>中文释义 *</label><input type="text" id="add-cn" placeholder="e.g. 坚持；不屈不挠" autocomplete="off"/></div>
+  <div class="row2">
+    <div class="field-group"><label>分级</label>
+      <select id="add-level"><option value="c">核心词汇</option><option value="h" selected>高频词汇</option><option value="b">基础词汇</option><option value="a">进阶词汇</option></select></div>
+    <div class="field-group"><label>音标</label><input type="text" id="add-ph" placeholder="e.g. /pəˈsɪvɪə/" autocomplete="off"/></div>
+  </div>
+  <div class="field-group"><label>英文释义</label><input type="text" id="add-en" placeholder="e.g. to continue doing sth despite difficulty" autocomplete="off"/></div>
+  <div class="field-group"><label>例句</label><textarea id="add-ex" placeholder="e.g. She persevered with her studies."></textarea></div>
+  <div style="display:flex;gap:8px;margin-top:4px;">
+    <button class="btn btn-primary" onclick="addWord()">添加单词</button>
+    <button class="btn btn-secondary" onclick="clearAddForm()">清空</button>
+  </div>
+  <div id="edit-mode-banner" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.3);border-radius:6px;font-size:11px;color:#a07820;">
+    正在编辑：<strong id="edit-word-name"></strong>
+    <button class="btn btn-sm btn-secondary" style="margin-left:10px" onclick="cancelEdit()">取消编辑</button>
+  </div>
+</div>
+
+<!-- IMPORT -->
+<div class="panel" id="panel-import">
+  <p class="import-hint">每行一个词，格式：<br><code>word,中文释义,h</code> (分级可选 c/h/b/a)</p>
+  <div class="import-area"><textarea id="import-text" placeholder="persevere,坚持；不屈不挠,h&#10;eloquent,口才好的,h&#10;ambiguous,模糊的；有歧义的,b" oninput="previewImport()"></textarea></div>
+  <div id="import-preview" class="import-preview" style="display:none"></div>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <button class="btn btn-primary" onclick="doImport()">导入</button>
+    <button class="btn btn-secondary" onclick="document.getElementById('import-text').value='';document.getElementById('import-preview').style.display='none'">清空</button>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div class="panel" id="panel-search">
+  <div class="search-bar">
+    <input type="text" id="qsearch-input" placeholder="输入关键词搜索 8079 词库…" autocomplete="off" onkeydown="if(event.key==='Enter')doSearch()"/>
+    <button class="btn btn-primary btn-sm" onclick="doSearch()">搜索</button>
+  </div>
+  <div class="pill-row" id="search-cat-filters">
+    <button class="pill active" data-cat="all" onclick="setSearchCat('all',this)">全部</button>
+    <button class="pill" data-cat="c" onclick="setSearchCat('c',this)">核心</button>
+    <button class="pill" data-cat="h" onclick="setSearchCat('h',this)">高频</button>
+    <button class="pill" data-cat="b" onclick="setSearchCat('b',this)">基础</button>
+    <button class="pill" data-cat="a" onclick="setSearchCat('a',this)">进阶</button>
+    <button class="pill" data-cat="custom" onclick="setSearchCat('custom',this)">自定义</button>
+  </div>
+  <div class="result-info" id="search-info"></div>
+  <div class="list-wrap" id="search-list"><div class="empty">输入关键词开始搜索</div></div>
+</div>
+
+<!-- MANAGE -->
+<div class="panel" id="panel-manage">
+  <div class="stats-bar">
+    词库总计 <span id="total-count">-</span> 词 ·
+    自定义 <span id="custom-count">-</span> 词 ·
+    已屏蔽 <span id="del-count">-</span> 词
+  </div>
+  <div class="search-bar">
+    <input type="text" id="manage-search" placeholder="搜索…" autocomplete="off" onkeydown="if(event.key==='Enter')renderManage()"/>
+    <button class="btn btn-primary btn-sm" onclick="renderManage()">搜索</button>
+    <select id="manage-filter" onchange="renderManage()">
+      <option value="custom">自定义词</option>
+      <option value="deleted">已屏蔽</option>
+      <option value="all">全部词库</option>
+    </select>
+  </div>
+  <div class="pill-row" id="manage-cat-pills">
+    <button class="pill active" data-cat="all" onclick="setManageCat('all',this)">全部</button>
+    <button class="pill" data-cat="c" onclick="setManageCat('c',this)">核心</button>
+    <button class="pill" data-cat="h" onclick="setManageCat('h',this)">高频</button>
+    <button class="pill" data-cat="b" onclick="setManageCat('b',this)">基础</button>
+    <button class="pill" data-cat="a" onclick="setManageCat('a',this)">进阶</button>
+  </div>
+  <div class="batch-bar" id="batch-bar" style="display:none">
+    <button class="btn btn-sm btn-secondary" onclick="selectAllManage()">全选</button>
+    <button class="btn btn-sm btn-secondary" onclick="deselectAllManage()">取消全选</button>
+    <select class="cat-sel" id="batch-cat-sel" onchange="batchRecategorize(this.value)" style="margin-left:4px">
+      <option value="">批量改分级…</option>
+      <option value="c">改为核心</option>
+      <option value="h">改为高频</option>
+      <option value="b">改为基础</option>
+      <option value="a">改为进阶</option>
+    </select>
+    <button class="btn btn-sm btn-secondary" onclick="batchTogglePri()">批量标优先</button>
+    <button class="btn btn-sm btn-danger" onclick="batchDelete()">批量删除</button>
+    <span style="font-size:10px;color:#888;margin-left:4px" id="batch-info"></span>
+  </div>
+  <div class="list-wrap" id="manage-list"><div class="empty">加载中…</div></div>
+  <button class="btn btn-secondary" id="load-more-btn" onclick="loadMore()" style="display:none;width:100%;margin-top:8px;padding:6px">加载更多…</button>
+</div>
+
+<!-- EXPORT -->
+<div class="panel" id="panel-export">
+  <p style="font-size:11px;color:#555;margin-bottom:12px;line-height:1.6">导出你的自定义词库，可分享给他人或备份。</p>
+  <div class="field-group"><label>格式</label>
+    <select id="export-format">
+      <option value="csv">CSV (Excel 可打开)</option>
+      <option value="json">JSON (可重新导入)</option>
+    </select>
+  </div>
+  <div class="field-group"><label>包含</label>
+    <select id="export-scope">
+      <option value="custom">仅自定义词</option>
+      <option value="all">全部可见词库</option>
+    </select>
+  </div>
+  <div style="display:flex;gap:8px;margin-top:4px;">
+    <button class="btn btn-primary" onclick="doExport()">导出到文件</button>
+    <button class="btn btn-secondary" onclick="doExportClipboard()">复制到剪贴板</button>
+  </div>
+  <div class="import-preview" id="export-preview" style="display:none;margin-top:12px;max-height:240px;white-space:pre-wrap;word-break:break-all;"></div>
+</div>
+
+<!-- Detail popup -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()">
+  <div class="detail-card" onclick="event.stopPropagation()">
+    <span class="close" onclick="closeDetail()">×</span>
+    <h3 id="detail-word">-</h3>
+    <div class="ph" id="detail-ph"></div>
+    <div class="def"><span class="def-label">中文</span><br><span id="detail-cn">-</span></div>
+    <div class="def" style="margin-top:6px" id="detail-en-block"><span class="def-label">英文释义</span><br><span id="detail-en">-</span></div>
+    <div class="ex" id="detail-ex-block"><span id="detail-ex">-</span></div>
+    <div style="margin-top:10px;display:flex;gap:6px;">
+      <span class="wr-tag" id="detail-tag">-</span>
+      <span style="font-size:9px;color:#888;" id="detail-source"></span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;border-top:1px solid rgba(0,0,0,0.08);padding-top:10px;">
+      <button class="btn btn-sm btn-secondary" id="detail-btn-edit" onclick="editFromDetail()" style="display:none">编辑</button>
+      <button class="btn btn-sm btn-danger" id="detail-btn-del" onclick="delFromDetail()">屏蔽此词</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const _fs   = (typeof require !== 'undefined') ? require('fs')   : null;
+const _path = (typeof require !== 'undefined') ? require('path') : null;
+const _pfile = (_fs && _path) ? _path.join(process.env.APPDATA || '', 'ielts-widget', 'progress.json') : null;
+const _cfile = (_fs && _path) ? _path.join(process.env.APPDATA || '', 'ielts-widget', 'custom_vocab.json') : null;
+if (_fs && _pfile) { try { _fs.mkdirSync(_path.dirname(_pfile), {recursive:true}); } catch(e) {} }
+
+let _searchCat = 'all';
+let _manageCat = 'all';
+let _editingWord = null;
+let _detailWord = null;
+let _lastSearchQ = '';
+
+function loadCustom() {
+  if (!_fs || !_cfile) return { words: [], deleted: [], categories: {}, priority: [] };
+  try { return JSON.parse(_fs.readFileSync(_cfile, 'utf8')); } catch(e) { return { words: [], deleted: [], categories: {}, priority: [] }; }
+}
+function saveCustom(data) {
+  if (!_fs || !_cfile) return;
+  try { _fs.writeFileSync(_cfile, JSON.stringify(data, null, 2), 'utf8'); } catch(e) {}
+}
+
+// ── Base vocab ──
+var _baseVocab = null;
+function getBaseVocab() {
+  if (_baseVocab) return _baseVocab;
+  _baseVocab = [];
+  try {
+    var arr = (typeof vocab !== 'undefined') ? vocab : (window.vocab || []);
+    if (!arr || !arr.length) return _baseVocab;
+    _baseVocab = arr.map(function(v) {
+      return { w:String(v[0]||''), cn:String(v[1]||''), cat:String(v[3]||'h'), _base:true, ph:'', en:'', ee:'' };
+    });
+  } catch(e) {
+    _baseVocab = [];
+  }
+  return _baseVocab;
+}
+
+// ── Unified vocab (base + custom - deleted) ───────────────────────────────
+function getUnifiedVocab() {
+  const data = loadCustom();
+  const deleted = new Set(data.deleted || []);
+  const base = getBaseVocab().filter(v => !deleted.has(v.w));
+  const customMap = {};
+  data.words.forEach(v => { customMap[v.w] = v; });
+  // Custom words not in base get added; custom words that override base replace them
+  var customOnly = data.words.filter(function(c) { return !base.find(function(b) { return b.w === c.w; }); });
+  // Mark all custom words explicitly
+  data.words.forEach(function(v) { v._base = false; });
+  return { all: base.filter(function(b) { return !customMap[b.w]; }).concat(data.words.filter(function(c) { return base.find(function(b) { return b.w === c.w; }); })).concat(customOnly), customMap: customMap, deleted: deleted };
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+function showToast(msg) { const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2500); }
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach(function(t) {
+    t.classList.toggle('active', t.getAttribute('data-tab') === id);
+  });
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  var panel = document.getElementById('panel-'+id);
+  if (panel) panel.classList.add('active');
+  if (id === 'search') doSearch();
+  if (id === 'manage') renderManage();
+}
+
+// ── Add word ──────────────────────────────────────────────────────────────
+function addWord() {
+  const w  = document.getElementById('add-word').value.trim().toLowerCase();
+  const cn = document.getElementById('add-cn').value.trim();
+  if (!w) { showToast('请填写英文单词'); return; }
+  if (!cn) { showToast('请填写中文释义'); return; }
+  const data = loadCustom();
+  const entry = { w, cn, p:document.getElementById('add-pos').value.trim(),
+    ph:document.getElementById('add-ph').value.trim(), en:document.getElementById('add-en').value.trim(),
+    ee:document.getElementById('add-ex').value.trim(), cat:document.getElementById('add-level').value };
+
+  if (_editingWord) {
+    const idx = data.words.findIndex(x => x.w === _editingWord);
+    if (idx !== -1) data.words[idx] = entry;
+    showToast('已更新「' + w + '」，重启词境生效');
+    cancelEdit();
+  } else {
+    if (data.words.find(x => x.w === w)) { showToast('该单词已存在'); return; }
+    data.words.push(entry);
+    showToast('已添加「' + w + '」，重启词境生效');
+    clearAddForm();
+  }
+  saveCustom(data);
+  _baseVocab = null; // invalidate cache
+}
+
+function clearAddForm() {
+  ['add-word','add-cn','add-pos','add-ph','add-en','add-ex'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('add-level').value = 'h';
+  document.getElementById('add-word').focus();
+  cancelEdit();
+}
+
+function cancelEdit() {
+  _editingWord = null;
+  document.getElementById('edit-mode-banner').style.display = 'none';
+}
+
+function startEdit(word) {
+  const data = loadCustom();
+  const entry = data.words.find(x => x.w === word);
+  if (!entry) return;
+  _editingWord = word;
+  document.getElementById('add-word').value = entry.w;
+  document.getElementById('add-cn').value = entry.cn||'';
+  document.getElementById('add-pos').value = entry.p||'';
+  document.getElementById('add-ph').value = entry.ph||'';
+  document.getElementById('add-en').value = entry.en||'';
+  document.getElementById('add-ex').value = entry.ee||'';
+  document.getElementById('add-level').value = entry.cat||'h';
+  document.getElementById('edit-word-name').textContent = word;
+  document.getElementById('edit-mode-banner').style.display = 'block';
+  // Switch to add tab
+  switchTab('add');
+}
+
+// ── Import ────────────────────────────────────────────────────────────────
+function parseImportText(text) {
+  const LEVEL = { c:'c',h:'h',b:'b',a:'a',core:'c',high:'h',basic:'b',adv:'a' };
+  return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    const p=line.split(',').map(s=>s.trim()); const w=p[0].toLowerCase();
+    return { w, cn:p[1]||'', cat:LEVEL[p[2]]||'h', p:'', ph:'', en:'', ee:'' };
+  }).filter(x=>x.w.length>0);
+}
+function previewImport() {
+  const items = parseImportText(document.getElementById('import-text').value);
+  const el = document.getElementById('import-preview');
+  if (items.length===0) { el.style.display='none'; return; }
+  el.style.display='block'; el.textContent = `解析到 ${items.length} 个单词：${items.slice(0,5).map(x=>x.w).join('、')}${items.length>5?' …':''}`;
+}
+function doImport() {
+  const items = parseImportText(document.getElementById('import-text').value);
+  if (items.length===0) { showToast('没有可导入的单词'); return; }
+  const data = loadCustom(); let added=0,skipped=0;
+  items.forEach(item => { if (data.words.find(x=>x.w===item.w)){skipped++;return;} data.words.push(item);added++; });
+  saveCustom(data);_baseVocab=null;
+  refreshStats();
+  showToast(`导入 ` + added + ` 个，跳过重复 ` + skipped + ` 个，重启词境生效`);
+  document.getElementById('import-text').value='';document.getElementById('import-preview').style.display='none';
+}
+
+// ── Search ────────────────────────────────────────────────────────────────
+function setSearchCat(cat, el) {
+  _searchCat = cat;
+  document.querySelectorAll('#search-cat-filters .pill').forEach(p => p.classList.toggle('active', p===el));
+  doSearch();
+}
+function hl(text, q) {
+  if (!q || q.length < 2) return text;
+  const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
+  return text.replace(re, '<span class="match-hl">$1</span>');
+}
+
+// ── Manage ────────────────────────────────────────────────────────────────
+function setManageCat(cat, el) {
+  _manageCat = cat;
+  document.querySelectorAll('#manage-cat-pills .pill').forEach(function(p) { p.classList.toggle('active', p === el); });
+  renderManage();
+}
+function renderManage() {
+  const data = loadCustom();
+  const q = (document.getElementById('manage-search').value||'').trim().toLowerCase();
+  const type = document.getElementById('manage-filter').value;
+  const deleted = new Set(data.deleted || []);
+  const TAG = { c:'核心', h:'高频', b:'基础', a:'进阶' };
+
+  document.getElementById('custom-count').textContent = data.words.length;
+  document.getElementById('del-count').textContent = deleted.size;
+  document.getElementById('total-count').textContent = (getBaseVocab().length + data.words.length) + ' 词';
+
+  let items = [];
+
+  if (type === 'deleted') {
+    items = [...deleted].filter(w => !q||w.includes(q)).map(w=>({w,cn:'(已屏蔽)',cat:'',_del:true}));
+  } else if (type === 'custom') {
+    items = data.words.filter(x => !q||x.w.includes(q)||(x.cn||'').includes(q));
+  } else {
+    const baseAll = getBaseVocab().filter(v => !deleted.has(v.w));
+    let baseFiltered = _manageCat !== 'all' ? baseAll.filter(v => v.cat === _manageCat) : baseAll;
+    if (q) {
+      baseFiltered = baseFiltered.filter(v => v.w.includes(q)||(v.cn||'').includes(q));
+    }
+    const customHits = data.words.filter(x => !q || x.w.includes(q)||(x.cn||'').includes(q));
+    items = [...customHits, ...baseFiltered];
+    if (!q) {
+      // Paginate: show first 50, with load-more
+      items._total = items.length;
+      items = items.slice(0, 50);
+    }
+  }
+
+  const el = document.getElementById('manage-list');
+  if (items.length === 0) { el.innerHTML = '<div class="empty">'+(q?'未找到「'+q+'」':'无词汇')+'</div>'; return; }
+
+    document.getElementById('batch-bar').style.display = items.length > 0 ? 'flex' : 'none';
+  var _total = items._total || items.length;
+  var _catData = loadCustom();
+  var _catOverrides = _catData.categories || {};
+  var _priList = _catData.priority || [];
+  document.getElementById('batch-cat-sel').value = '';
+  el.innerHTML = items.slice(0, _loadMoreLimit).map(function(x) {
+    if (x._del) {
+      return '<div class="word-row"><input type="checkbox" class="wr-check" value="'+x.w+'" onchange="onCheck()"/>'+
+        '<span class="wr-word">'+x.w+'</span><span class="wr-cn">'+x.cn+'</span>'+
+        '<div class="wr-actions"><button class="wr-btn restore" onclick="restoreWord(\''+x.w+'\')">恢复</button></div></div>';
+    }
+    var isCustom = !x._base;
+    var curCat = _catOverrides[x.w] || x.cat || 'h';
+    var isPri = _priList.indexOf(x.w) >= 0;
+    var catOpts = '<select class="cat-sel" onchange="changeCat(\''+x.w+'\',this.value)" onclick="event.stopPropagation()">'+
+      '<option value="c"'+(curCat==='c'?' selected':'')+'>核心</option>'+
+      '<option value="h"'+(curCat==='h'?' selected':'')+'>高频</option>'+
+      '<option value="b"'+(curCat==='b'?' selected':'')+'>基础</option>'+
+      '<option value="a"'+(curCat==='a'?' selected':'')+'>进阶</option>'+
+      '</select>';
+    var priBtn = '<button class="wr-btn'+(isPri?' pri-on':'')+'" onclick="togglePri(\''+x.w+'\')" title="'+(isPri?'取消优先':'设为优先')+'">'+(isPri?'★':'☆')+'</button>';
+    return '<div class="word-row">'+
+      '<input type="checkbox" class="wr-check" value="'+x.w+'" onchange="onCheck()"/>'+
+      '<span class="wr-word" onclick="showDetail(\''+x.w+'\')">'+x.w+'</span>'+
+      '<span class="wr-cn">'+(x.cn||'').slice(0,30)+'</span>'+
+      catOpts +
+      priBtn +
+      (isCustom?'<span style="font-size:9px;color:#1a6640">自定义</span>':'')+
+      '<div class="wr-actions">'+
+        (isCustom?'<button class="wr-btn edit" onclick="startEdit(\''+x.w+'\')">编辑</button>':'')+
+        '<button class="wr-btn del" onclick="deleteWord(\''+x.w+'\')">删除</button>'+
+      '</div></div>';
+  }).join('') + (_total > _loadMoreLimit ? '' : '');
+  document.getElementById('load-more-btn').style.display = _total > _loadMoreLimit ? '' : 'none';
+  document.getElementById('load-more-btn').textContent = '加载更多 ('+Math.min(_total, _loadMoreLimit)+' / '+_total+')';
+  updateBatchInfo();
+}
+
+// ── Detail popup ──────────────────────────────────────────────────────────
+function showDetail(word) {
+  const { all } = getUnifiedVocab();
+  const v = all.find(x => x.w === word);
+  if (!v) return;
+  _detailWord = word;
+  document.getElementById('detail-word').textContent = v.w;
+  document.getElementById('detail-ph').textContent = v.ph || '';
+  document.getElementById('detail-cn').textContent = v.cn || '-';
+  document.getElementById('detail-en').textContent = v.en || '-';
+  document.getElementById('detail-ex').textContent = v.ee || '-';
+  if (!v.en) document.getElementById('detail-en-block').style.display = 'none';
+  else document.getElementById('detail-en-block').style.display = '';
+  if (!v.ee) document.getElementById('detail-ex-block').style.display = 'none';
+  else document.getElementById('detail-ex-block').style.display = '';
+  const TAG = { c:'核心', h:'高频', b:'基础', a:'进阶' };
+  const tagEl = document.getElementById('detail-tag');
+  tagEl.textContent = TAG[v.cat]||v.cat||'词汇';
+  tagEl.className = 'wr-tag '+(v.cat||'h');
+  document.getElementById('detail-source').textContent = v._base ? '原词库' : '自定义词';
+  document.getElementById('detail-btn-edit').style.display = v._base ? 'none' : '';
+  document.getElementById('detail-overlay').classList.add('show');
+}
+function closeDetail() { document.getElementById('detail-overlay').classList.remove('show'); }
+function editFromDetail() { if (_detailWord) startEdit(_detailWord); closeDetail(); }
+function delFromDetail() { if (_detailWord) { deleteWord(_detailWord); closeDetail(); } }
+
+// ── Delete / Restore ──────────────────────────────────────────────────────
+function deleteWord(word) {
+  const data = loadCustom();
+  const idx = data.words.findIndex(x => x.w === word);
+  if (idx !== -1) { data.words.splice(idx,1); if(!data.deleted.includes(word))data.deleted.push(word); }
+  else { if(!data.deleted.includes(word))data.deleted.push(word); }
+  saveCustom(data);_baseVocab=null;
+  refreshStats();
+  showToast('已屏蔽「'+word+'」，重启词境生效');
+  renderManage(); if (_lastSearchQ) doSearch();
+}
+function restoreWord(word) {
+  const data = loadCustom();
+  data.deleted = data.deleted.filter(w => w!==word);
+  saveCustom(data);_baseVocab=null;
+  refreshStats();
+  showToast('已恢复「'+word+'」');
+  renderManage();
+}
+
+// ── Export ────────────────────────────────────────────────────────────────
+function getExportContent() {
+  const fmt = document.getElementById('export-format').value;
+  const scope = document.getElementById('export-scope').value;
+  let words;
+  if (scope === 'custom') {
+    const data = loadCustom();
+    words = data.words;
+  } else {
+    words = getUnifiedVocab().all.slice(0, 500);
+  }
+  if (fmt === 'csv') {
+    return 'word,cn,cat,ph,en,example\n' + words.map(v =>
+      [v.w, (v.cn||'').replace(/,/g,'；'), v.cat||'h', v.ph||'', (v.en||'').replace(/,/g,'；'), (v.ee||'').replace(/,/g,'；')].join(',')
+    ).join('\n');
+  }
+  return JSON.stringify(words.map(v => ({w:v.w,cn:v.cn||'',cat:v.cat||'h',ph:v.ph||'',en:v.en||'',ee:v.ee||''})), null, 2);
+}
+function doExport() {
+  try {
+    const content = getExportContent();
+    const ext = document.getElementById('export-format').value === 'csv' ? '.csv' : '.json';
+    const fp = _path ? _path.join(process.env.APPDATA||'', 'ielts-widget', 'export_vocab'+ext) : null;
+    if (_fs && fp) { _fs.mkdirSync(_path.dirname(fp),{recursive:true}); _fs.writeFileSync(fp, content, 'utf8'); }
+    document.getElementById('export-preview').style.display = 'block';
+    document.getElementById('export-preview').textContent = `已导出到：${fp}\n\n` + content.slice(0, 2000);
+    showToast('已导出到：'+fp);
+  } catch(e) { showToast('导出失败：'+e.message); }
+}
+function doExportClipboard() {
+  try {
+    const content = getExportContent();
+    const ta = document.createElement('textarea');
+    ta.value = content; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    showToast('已复制 '+content.split('\n').length+' 行到剪贴板');
+  } catch(e) { showToast('复制失败'); }
+}
+
+// ── Batch management ──────────────────────────────────────────────────────
+var _loadedCount = 0;
+var _loadMoreLimit = 50;
+var _cachedItems = [];
+function loadMore() {
+  _loadMoreLimit += 50;
+  renderManage();
+}
+function onCheck() {
+  updateBatchInfo();
+}
+function updateBatchInfo() {
+  var c = document.querySelectorAll('.wr-check:checked').length;
+  document.getElementById('batch-info').textContent = c + ' 个已选';
+}
+function selectAllManage() {
+  document.querySelectorAll('.wr-check').forEach(function(cb) { cb.checked = true; });
+  updateBatchInfo();
+}
+function deselectAllManage() {
+  document.querySelectorAll('.wr-check').forEach(function(cb) { cb.checked = false; });
+  updateBatchInfo();
+}
+function changeCat(word, newCat) {
+  var data = loadCustom();
+  if (!data.categories) data.categories = {};
+  data.categories[word] = newCat;
+  saveCustom(data);
+  showToast('已改为 '+({c:'核心',h:'高频',b:'基础',a:'进阶'}[newCat]||newCat)+'，重启词境生效');
+}
+
+function togglePri(word) {
+  var data = loadCustom();
+  if (!data.priority) data.priority = [];
+  var idx = data.priority.indexOf(word);
+  if (idx >= 0) { data.priority.splice(idx, 1); showToast('已取消优先'); }
+  else { data.priority.push(word); showToast('已设为优先，重启词境后优先学习'); }
+  saveCustom(data);
+  renderManage();
+}
+
+function batchRecategorize(newCat) {
+  if (!newCat) return;
+  var checked = document.querySelectorAll('.wr-check:checked');
+  if (checked.length === 0) { showToast('请先选择要改分级的词'); document.getElementById('batch-cat-sel').value=''; return; }
+  var data = loadCustom();
+  if (!data.categories) data.categories = {};
+  var count = 0;
+  checked.forEach(function(cb) { data.categories[cb.value] = newCat; count++; });
+  saveCustom(data);
+  showToast('已批量修改 '+count+' 个词的分级，重启词境生效');
+  document.getElementById('batch-cat-sel').value = '';
+  renderManage();
+}
+
+function batchTogglePri() {
+  var checked = document.querySelectorAll('.wr-check:checked');
+  if (checked.length === 0) { showToast('请先选择要操作词'); return; }
+  var data = loadCustom();
+  if (!data.priority) data.priority = [];
+  var count = 0;
+  checked.forEach(function(cb) {
+    if (data.priority.indexOf(cb.value) >= 0) { data.priority = data.priority.filter(function(w){return w!==cb.value}); }
+    else { data.priority.push(cb.value); count++; }
+  });
+  saveCustom(data);
+  showToast('已批量标优先 '+count+' 个词');
+  renderManage();
+}
+
+// CSS for priority button (safe inject)
+try { document.head.insertAdjacentHTML('beforeend','<style>.wr-btn.pri-on{color:#c9a96e!important;border-color:rgba(201,169,110,0.4)!important;background:rgba(201,169,110,0.08)!important;}</style>'); } catch(e) {}
+
+function batchDelete() {
+  var checked = document.querySelectorAll('.wr-check:checked');
+  if (checked.length === 0) { showToast('请先选择要删除的词'); return; }
+  if (!confirm('确定要删除/屏蔽 ' + checked.length + ' 个单词吗？')) return;
+  var data = loadCustom();
+  var count = 0;
+  checked.forEach(function(cb) {
+    var w = cb.value;
+    // Remove from custom
+    var idx = data.words.findIndex(function(x) { return x.w === w; });
+    if (idx !== -1) { data.words.splice(idx, 1); count++; }
+    // Add to deleted
+    if (!data.deleted.includes(w)) data.deleted.push(w);
+  });
+  saveCustom(data);
+  _baseVocab = null;
+  refreshStats();
+  showToast('已批量删除/屏蔽 ' + checked.length + ' 个词，重启词境生效');
+  _loadMoreLimit = 50;
+  renderManage();
+}
+
+// Also update search results with checkboxes
+function doSearch() {
+  var q = document.getElementById('qsearch-input').value.trim().toLowerCase();
+  _lastSearchQ = q;
+  if (!q) { document.getElementById('search-list').innerHTML='<div class="empty">输入关键词开始搜索</div>';document.getElementById('search-info').textContent='';return; }
+  var uv = getUnifiedVocab();
+  var all = uv.all;
+  var deleted = uv.deleted;
+  var TAG = { c:'核心', h:'高频', b:'基础', a:'进阶' };
+  var results = all;
+  if (_searchCat !== 'all' && _searchCat !== 'custom') { results = results.filter(function(v){return v.cat===_searchCat;}); }
+  else if (_searchCat === 'custom') { results = results.filter(function(v){return !v._base;}); }
+  results = results.filter(function(v){return v.w.includes(q)||(v.cn||'').includes(q);});
+  document.getElementById('search-info').textContent = '找到 ' + results.length + ' 个匹配';
+  var list = document.getElementById('search-list');
+  if (results.length === 0) { list.innerHTML = '<div class="empty">未找到匹配</div>'; return; }
+  list.innerHTML = results.slice(0, 200).map(function(v) {
+    var isCustom = !v._base;
+    return '<div class="word-row">' +
+      '<input type="checkbox" class="wr-check" value="'+v.w+'"/>' +
+      '<span class="wr-word" onclick="showDetail(\''+v.w+'\')">'+hl(v.w,q)+'</span>' +
+      (v.ph ? '<span class="wr-ph">'+v.ph+'</span>' : '<span class="wr-ph"></span>') +
+      '<span class="wr-cn">'+hl(v.cn||'',q)+'</span>' +
+      '<span class="wr-tag '+v.cat+'">'+(TAG[v.cat]||v.cat)+'</span>' +
+      (isCustom ? '<span style="font-size:9px;color:#1a6640">自定义</span>' : '') +
+      '<div class="wr-actions"><button class="wr-btn del" onclick="deleteWord(\''+v.w+'\')">删除</button></div>' +
+      '</div>';
+  }).join('') + (results.length>200?'<div class="empty">显示前200条，共'+results.length+'个</div>':'');
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+clearAddForm();
+</script>
+</body>
+</html>

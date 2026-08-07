@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境</title>
+<link href="fonts/eb-garamond.css" rel="stylesheet"/>
+<style>
+/* Chinese system font fallback (offline) */
+body { font-family: "Noto Serif SC","Source Han Serif SC","Source Han Serif","STSong","SimSun",serif; }
+</style>
+<style>
+/* ── Themes ── */
+:root{
+  --bg:rgba(12,17,14,0.94);
+  --border:rgba(60,90,70,0.55);
+  --accent:#7eb89a;
+  --accent-rgb:126,184,154;
+  --accent2:#3a6a52;
+  --dot-grad:linear-gradient(135deg,#4a7a62,#7eb89a);
+  --text:#ede5d5;
+  --text-muted:#7a8a7e;
+  --text-dim:#3a4a3e;
+  --panel-bg:rgba(10,14,12,0.99);
+  --word-color:#e8e0d0;
+}
+.theme-blue{
+  --bg:rgba(10,14,20,0.94);
+  --border:rgba(50,70,110,0.55);
+  --accent:#7ab0d8;
+  --accent-rgb:122,176,216;
+  --accent2:#3a5a82;
+  --dot-grad:linear-gradient(135deg,#3a5a82,#7ab0d8);
+  --text:#dde8f5;
+  --text-muted:#7a8aaa;
+  --text-dim:#3a4a6e;
+  --panel-bg:rgba(8,12,20,0.99);
+  --word-color:#e0e8f5;
+}
+.theme-purple{
+  --bg:rgba(14,10,20,0.94);
+  --border:rgba(80,50,110,0.55);
+  --accent:#a87ad8;
+  --accent-rgb:168,122,216;
+  --accent2:#5a3a82;
+  --dot-grad:linear-gradient(135deg,#5a3a82,#a87ad8);
+  --text:#ecddf5;
+  --text-muted:#8a7aaa;
+  --text-dim:#4a3a6e;
+  --panel-bg:rgba(12,8,20,0.99);
+  --word-color:#ecddf5;
+}
+.theme-amber{
+  --bg:rgba(18,14,8,0.94);
+  --border:rgba(100,75,30,0.55);
+  --accent:#d4a84b;
+  --accent-rgb:212,168,75;
+  --accent2:#7a5a20;
+  --dot-grad:linear-gradient(135deg,#7a5a20,#d4a84b);
+  --text:#f5e8cc;
+  --text-muted:#aa8a5a;
+  --text-dim:#6a4a20;
+  --panel-bg:rgba(16,12,6,0.99);
+  --word-color:#f5e8cc;
+}
+.theme-rose{
+  --bg:rgba(20,10,12,0.94);
+  --border:rgba(110,50,60,0.55);
+  --accent:#d87a8a;
+  --accent-rgb:216,122,138;
+  --accent2:#823a48;
+  --dot-grad:linear-gradient(135deg,#823a48,#d87a8a);
+  --text:#f5dde2;
+  --text-muted:#aa7a80;
+  --text-dim:#6e3a40;
+  --panel-bg:rgba(18,8,10,0.99);
+  --word-color:#f5dde2;
+}
+/* Light theme */
+.theme-light{
+  --bg:rgba(245,242,235,0.97);
+  --border:rgba(180,200,185,0.6);
+  --accent:#3a7a5a;
+  --accent-rgb:58,122,90;
+  --accent2:#2a5a40;
+  --dot-grad:linear-gradient(135deg,#2a5a40,#3a7a5a);
+  --text:#1a2a1e;
+  --text-muted:#5a7a64;
+  --text-dim:#a0b8a8;
+  --panel-bg:rgba(238,235,228,0.99);
+  --word-color:#1a2a1e;
+}
+.theme-light .widget{
+  box-shadow:0 8px 32px rgba(0,0,0,0.18),0 0 0 1px rgba(58,122,90,0.12),inset 0 1px 0 rgba(255,255,255,0.8);
+}
+.theme-light .topbar{
+  background:rgba(255,255,255,0.5);
+  border-bottom:1px solid rgba(180,200,185,0.5);
+}
+.theme-light .body{ background:transparent; }
+.theme-light .acts{ border-top:1px solid rgba(180,200,185,0.4); }
+.theme-light .prog-bar{ background:rgba(180,200,185,0.3); }
+.theme-light .prog-info{ color:var(--text-dim); }
+.theme-light .stats{ border-top:none; }
+.theme-light .word{ color:#1a2a1e; }
+.theme-light .def-cn{ color:#1a2a1e; }
+.theme-light .def-en{ color:#5a7a64; }
+.theme-light .example{ background:rgba(58,122,90,0.06);border-left-color:rgba(58,122,90,0.4); }
+.theme-light .ex-en{ color:#5a7a64; }
+.theme-light .filter-bar{ border-bottom:1px solid rgba(180,200,185,0.45); }
+.theme-light .tbtn{ color:#8aaa94;border-color:rgba(58,122,90,0.15); }
+.theme-light .list-panel{ border-top:1px solid rgba(180,200,185,0.5); }
+.theme-light .list-item{ border-bottom:1px solid rgba(180,200,185,0.3); }
+.theme-light .li-word{ color:#1a2a1e; }
+.theme-light .li-cn{ color:#5a7a64; }
+/* theme picker panel */
+.theme-panel{
+  display:none;
+  flex-direction:row;flex-wrap:wrap;gap:5px;align-items:center;
+  padding:7px 12px 8px;
+  background:rgba(var(--accent-rgb),0.04);
+  border-bottom:1px solid rgba(var(--accent-rgb),0.15);
+}
+.theme-panel.on{ display:flex; }
+.theme-panel-title{ font-size:9px;color:var(--text-dim);letter-spacing:.1em;width:100%;margin-bottom:1px; }
+.theme-opt{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 7px;border-radius:12px;cursor:pointer;
+  border:1px solid transparent;
+  transition:all .12s;
+}
+.theme-opt:hover{ border-color:rgba(var(--accent-rgb),0.3);background:rgba(var(--accent-rgb),0.06); }
+.theme-opt.active{ border-color:rgba(var(--accent-rgb),0.5);background:rgba(var(--accent-rgb),0.1); }
+.theme-dot{ width:8px;height:8px;border-radius:50%;flex-shrink:0; }
+.theme-label{ font-size:9px;color:var(--text-muted);font-family:"Noto Serif SC",serif;white-space:nowrap; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:300px;background:transparent;
+  font-family:"Noto Serif SC",serif;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;user-select:none;
+  border-radius:16px;
+}
+.widget{
+  width:300px;
+  position:relative;
+  background:var(--bg);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  box-shadow:0 12px 40px rgba(0,0,0,0.6),0 0 0 1px rgba(126,184,154,0.07),inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+/* ── Topbar ── */
+.topbar{
+  height:34px;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:nowrap;
+  padding:0 10px;
+  background:rgba(255,255,255,0.02);
+  border-bottom:1px solid rgba(42,56,48,0.7);
+  cursor:default;
+}
+.topbar-left{ display:flex;align-items:center;gap:6px;flex-shrink:0; }
+.logo-dot{
+  width:6px;height:6px;border-radius:50%;flex-shrink:0;
+  background:var(--dot-grad);
+  box-shadow:0 0 5px rgba(var(--accent-rgb),0.4);
+}
+.logo-text{
+  font-size:11px;font-weight:500;color:var(--accent);
+  letter-spacing:.2em;white-space:nowrap;flex-shrink:0;
+}
+.topbar-right{ display:flex;gap:3px;align-items:center;flex-shrink:0; }
+
+/* inline opacity slider */
+.opacity-range-inline{
+  -webkit-appearance:none;
+  width:38px;height:3px;
+  background:rgba(var(--accent-rgb),0.2);
+  border-radius:2px;cursor:pointer;outline:none;
+  align-self:center;margin:0 1px;flex-shrink:0;
+}
+.opacity-range-inline::-webkit-slider-thumb{
+  -webkit-appearance:none;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--accent);cursor:ew-resize;
+  box-shadow:0 0 3px rgba(var(--accent-rgb),0.6);
+}
+
+/* topbar buttons */
+.tbtn{
+  width:20px;height:20px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.07);
+  background:transparent;
+  color:#3a4a3e;font-size:10px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .18s;flex-shrink:0;
+}
+.tbtn:hover{ background:rgba(var(--accent-rgb),0.12);color:var(--accent);border-color:rgba(var(--accent-rgb),0.3); }
+.tbtn.close:hover{ background:rgba(192,112,112,0.15);color:#c07070;border-color:rgba(192,112,112,0.35); }
+#mute-btn.on{ color:#c07070;border-color:rgba(192,112,112,0.4); }
+#anim-btn.on{ color:#7eb89a;border-color:rgba(126,184,154,0.4); }
+.more-menu{ position:fixed;background:var(--panel-bg);border:1px solid var(--border);border-radius:10px;padding:4px;z-index:200;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:none; }
+.more-item{ padding:7px 12px;font-size:11px;color:var(--text);cursor:pointer;border-radius:6px;white-space:nowrap;letter-spacing:.03em; }
+.more-item:hover{ background:rgba(var(--accent-rgb),0.1); }
+#mute-item.on{ color:#c07070; }
+#anim-item.on{ color:#7eb89a; }
+.tbtn.pin.on{ background:rgba(var(--accent-rgb),0.15);color:var(--accent);border-color:rgba(var(--accent-rgb),0.4); }
+
+/* ── Streak banner ── */
+.streak-banner{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:3px 12px;font-size:9px;color:#b8944e;
+  border-bottom:1px solid rgba(42,56,48,0.4);
+  background:rgba(201,169,110,0.05);
+  letter-spacing:.04em;
+}
+.streak-banner.hide{ display:none; }
+
+/* ── Filter bar ── */
+.filter-bar{
+  display:flex;align-items:center;gap:4px;
+  padding:5px 12px 4px;
+  border-bottom:1px solid rgba(42,56,48,0.45);
+}
+.filt-btn{
+  height:19px;padding:0 8px;
+  border-radius:10px;
+  border:1px solid rgba(60,90,70,0.35);
+  background:transparent;
+  color:#3a5a44;
+  font-family:"Noto Serif SC",serif;
+  font-size:10px;font-weight:500;
+  cursor:pointer;transition:all .15s;
+}
+.filt-btn:hover{ border-color:var(--accent);color:var(--accent); }
+.filt-btn.active{ background:rgba(var(--accent-rgb),0.1);border-color:var(--accent);color:var(--accent); }
+.filt-btn[data-f="h"].active{ border-color:var(--accent);color:var(--accent);background:rgba(var(--accent-rgb),.1); }
+.filt-btn[data-f="c"].active{ border-color:#c9a96e;color:#c9a96e;background:rgba(201,169,110,.1); }
+.filt-btn[data-f="b"].active{ border-color:#7aabcc;color:#7aabcc;background:rgba(122,171,204,.1); }
+.filt-btn[data-f="all"].active{ border-color:#8a7a9e;color:#9a8aae;background:rgba(138,122,158,.1); }
+.filt-btn[data-f="x"].active{ border-color:#d480c0;color:#d480c0;background:rgba(212,128,192,.1); }
+.filter-count{ margin-left:auto;font-size:9px;color:#2a3a2e;font-family:"EB Garamond",serif; }
+
+/* ── Card body ── */
+.mini-bar{
+  display:none;align-items:center;
+  padding:5px 12px;gap:8px;min-height:30px;
+  border-bottom:1px solid rgba(42,56,48,0.4);
+}
+.widget.mini .mini-bar{ display:flex; }
+.widget.mini .filter-bar,
+.widget.mini #study-view > .body,
+.widget.mini #study-view > .prog-wrap,
+.widget.mini #study-view > .acts,
+.widget.mini #study-view > .stats,
+.widget.mini #finish-view{ display:none !important; }
+.mini-word{ font-family:"EB Garamond",serif;font-size:15px;font-weight:500;color:#e8e0d0;flex:1;letter-spacing:-.01em; }
+.mini-cn{ font-size:10px;color:#6a9a7e;flex:1; }
+.mini-prog{ font-size:9px;color:#2a3a2e;font-family:"EB Garamond",serif;white-space:nowrap; }
+.mini-toggle{ font-size:11px;color:#3a4a3e;cursor:pointer;border:none;background:none;padding:2px 4px;border-radius:4px;flex-shrink:0; }
+.mini-toggle:hover{ color:#7eb89a; }
+
+.body{
+  cursor:pointer;
+  min-height:110px;
+  perspective:600px;
+  position:relative;
+}
+.card-inner{
+  position:relative;
+  width:100%;
+  transform-style:preserve-3d;
+  transition:transform .45s cubic-bezier(.4,0,.2,1);
+}
+.card-inner.flipped{ transform:rotateY(180deg); }
+.no-anim .card-inner{ transition:none !important; }
+.no-anim .answer{ transition:none !important; }
+.no-anim .card-fav,.no-anim .tbtn,.no-anim .btn{ transition:none !important; }
+
+.card-front,.card-back{
+  backface-visibility:hidden;
+  -webkit-backface-visibility:hidden;
+  padding:16px 16px 8px;
+}
+.card-front{ position:relative; }
+.card-back{
+  position:absolute;top:0;left:0;right:0;
+  transform:rotateY(180deg);
+}
+.cat-tag{
+  display:inline-block;
+  font-size:9px;letter-spacing:.14em;
+  color:#4a7a62;text-transform:uppercase;
+  font-family:"EB Garamond",serif;
+  margin-bottom:7px;
+}
+.word-line{ display:flex;align-items:baseline;gap:8px;margin-bottom:2px; }
+.word{
+  font-family:"EB Garamond",serif;
+  font-size:32px;font-weight:500;
+  color:var(--text);letter-spacing:-.01em;line-height:1;
+}
+.pos{ font-size:10px;color:#3a4a3e;font-family:"EB Garamond",serif; }
+.ph{ font-family:"EB Garamond",serif;font-size:12px;color:#3a4a3e;margin-bottom:8px; }
+
+/* fav star */
+.card-fav{
+  position:absolute;top:12px;right:12px;
+  width:22px;height:22px;border-radius:50%;
+  border:1px solid rgba(255,255,255,0.07);
+  background:transparent;color:#2a3a2e;font-size:12px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.card-fav:hover{ color:#c9a96e;border-color:rgba(201,169,110,0.4); }
+.card-fav.on{ color:#c9a96e;background:rgba(201,169,110,0.12);border-color:rgba(201,169,110,0.4); }
+
+/* answer */
+.answer{ overflow:hidden;max-height:0;transition:max-height .4s cubic-bezier(.4,0,.2,1),opacity .3s;opacity:0; }
+.answer.show{ max-height:200px;opacity:1; }
+.def-cn{ font-size:17px;font-weight:500;color:var(--text);line-height:1.4;margin-bottom:3px; }
+.def-en{ font-size:11px;color:#7a8a7e;font-family:"EB Garamond",serif;line-height:1.5;font-style:italic;margin-bottom:7px; }
+.example{
+  background:rgba(126,184,154,0.05);
+  border-left:2px solid rgba(74,122,98,0.6);
+  padding:5px 10px;border-radius:0 4px 4px 0;
+  margin-bottom:3px;
+}
+.ex-en{ font-family:"EB Garamond",serif;font-size:11px;color:#7a8a7e;line-height:1.6;font-style:italic; }
+.ex-cn{ font-size:10px;color:#3a4a3e;margin-top:2px;line-height:1.4; }
+.tap-hint{ font-size:10px;color:#2a3a2e;letter-spacing:.1em;font-family:"EB Garamond",serif;margin-top:6px;transition:opacity .2s; }
+.tap-hint.hide{ opacity:0; }
+
+/* progress */
+.prog-wrap{ padding:0 16px;margin-top:6px; }
+.prog-bar{ height:2px;background:rgba(26,40,32,0.8);border-radius:1px;overflow:hidden; }
+.prog-fill{ height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:1px;transition:width .5s cubic-bezier(.4,0,.2,1); }
+.prog-info{ display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:#2a3a2e;font-family:"EB Garamond",serif; }
+
+/* action buttons */
+.acts{ display:flex;gap:8px;padding:8px 16px;border-top:1px solid rgba(42,56,48,0.5);margin-top:6px; }
+.btn{
+  flex:1;height:34px;border-radius:8px;border:1px solid;
+  font-family:"Noto Serif SC",serif;font-size:11px;font-weight:500;
+  cursor:pointer;letter-spacing:.05em;transition:all .18s;
+}
+.bu{ background:rgba(192,112,112,.06);border-color:rgba(192,112,112,.22);color:#b06060; }
+.bu:hover{ border-color:rgba(192,112,112,.5);background:rgba(192,112,112,.12);color:#c07070; }
+.bk{ background:rgba(var(--accent-rgb),.06);border-color:rgba(var(--accent-rgb),.22);color:var(--accent2); }
+.bk:hover{ border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.12);color:var(--accent); }
+
+/* bottom stats */
+.stats{ display:flex;align-items:center;justify-content:space-between;padding:5px 16px 10px; }
+.stat{ display:flex;align-items:center;gap:4px;font-size:10px;color:#2a3a2e; }
+.stat b{ font-family:"EB Garamond",serif;font-size:13px;font-weight:500; }
+.stat.k b{ color:var(--accent); }.stat.u b{ color:#c07070; }
+.streak{ font-size:9px;color:#b8944e;background:rgba(201,169,110,.08);border:1px solid rgba(201,169,110,.18);border-radius:20px;padding:2px 8px; }
+
+/* finish screen */
+.finish{ display:none;flex-direction:column;align-items:center;padding:20px 16px 16px;gap:10px;text-align:center; }
+.finish.on{ display:flex; }
+.fi-icon{ font-size:36px;line-height:1; }
+.fi-title{ font-size:14px;font-weight:600;color:#e8e0d0;letter-spacing:.06em; }
+.fi-sub{ font-size:11px;color:#7a8a7e;line-height:1.6; }
+.fi-stats{ display:flex;gap:20px;background:rgba(255,255,255,.02);border:1px solid rgba(42,56,48,.7);border-radius:10px;padding:10px 18px; }
+.fis{ text-align:center; }
+.fis .n{ font-family:"EB Garamond",serif;font-size:22px;font-weight:500;line-height:1; }
+.fis .l{ font-size:9px;color:#3a4a3e;margin-top:3px;letter-spacing:.08em; }
+.fis.k .n{ color:#7eb89a; }.fis.u .n{ color:#c07070; }.fis.f .n{ color:#c9a96e; }
+.fi-btns{ display:flex;gap:6px;flex-wrap:wrap;justify-content:center; }
+.fb{ height:32px;border-radius:16px;border:none;font-family:"Noto Serif SC",serif;font-size:11px;font-weight:600;cursor:pointer;padding:0 14px;transition:opacity .2s;letter-spacing:.05em; }
+.fb.restart{ background:linear-gradient(135deg,var(--accent2),var(--accent));color:#0a0f0c; }
+.fb.review{ background:rgba(192,112,112,.1);border:1px solid rgba(192,112,112,.35);color:#c07070; }
+.fb.fav-rev{ background:rgba(201,169,110,.1);border:1px solid rgba(201,169,110,.35);color:#c9a96e; }
+.fb:hover{ opacity:.75; }
+
+/* ── Word list panel ── */
+.list-overlay{ position:absolute;left:0;right:0;top:34px;bottom:0;z-index:100;background:rgba(0,0,0,0.4);border-radius:0 0 16px 16px;display:none; }
+.list-overlay.on{ display:block; }
+.list-panel{
+  position:absolute;left:0;right:0;bottom:0;top:0;
+  background:var(--panel-bg);
+  border-top:1px solid rgba(60,90,70,0.5);
+  border-radius:0 0 16px 16px;
+  display:flex;flex-direction:column;
+  transform:translateY(100%);
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
+}
+.list-overlay.on .list-panel{ transform:translateY(0); }
+.list-header{
+  display:flex;align-items:center;
+  padding:8px 12px 6px;
+  border-bottom:1px solid rgba(42,56,48,0.4);
+  flex-shrink:0;gap:6px;
+  cursor:default;
+}
+.list-header-drag{ flex:1;display:flex;align-items:center;gap:8px;cursor:default; }
+.list-title{ font-size:11px;font-weight:600;color:#8aaa94;letter-spacing:.12em;flex-shrink:0; }
+.list-tabs{ display:flex;gap:3px; }
+.ltab{
+  height:19px;padding:0 8px;border-radius:10px;
+  border:1px solid rgba(60,90,70,0.3);background:transparent;
+  color:#3a5040;font-family:"Noto Serif SC",serif;font-size:9px;
+  cursor:pointer;transition:all .15s;
+}
+.ltab:hover{ color:var(--accent);border-color:rgba(var(--accent-rgb),0.3); }
+.ltab.active{ background:rgba(var(--accent-rgb),0.1);border-color:var(--accent);color:var(--accent); }
+.ltab[data-t="u"].active{ background:rgba(192,112,112,.1);border-color:#c07070;color:#c07070; }
+.ltab[data-t="f"].active{ background:rgba(201,169,110,.1);border-color:#c9a96e;color:#c9a96e; }
+.list-close{
+  width:18px;height:18px;border-radius:50%;
+  border:none;background:rgba(255,255,255,0.05);
+  color:#3a4a3e;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;transition:all .15s;
+}
+.list-close:hover{ background:rgba(192,112,112,0.15);color:#c07070; }
+.list-search{
+  display:flex;align-items:center;
+  padding:5px 12px;gap:0;
+  border-bottom:1px solid rgba(42,56,48,0.3);flex-shrink:0;
+}
+.list-search input{
+  flex:1;background:rgba(255,255,255,0.03);
+  border:1px solid rgba(60,90,70,0.3);border-radius:6px;
+  padding:4px 10px;font-size:10px;color:#b8c0b4;
+  outline:none;font-family:"Noto Serif SC",serif;
+  transition:border-color .15s;
+}
+.list-search input::placeholder{ color:#2a3a2e; }
+.list-search input:focus{ border-color:rgba(var(--accent-rgb),0.4);background:rgba(var(--accent-rgb),0.03); }
+.list-body{ overflow-y:auto;flex:1;padding:2px 0; }
+.list-item{
+  display:flex;align-items:center;
+  padding:5px 12px;gap:8px;
+  border-bottom:1px solid rgba(42,56,48,0.15);
+  transition:background .1s;
+}
+.list-item:hover{ background:rgba(var(--accent-rgb),0.04); }
+.li-word{ font-family:"EB Garamond",serif;font-size:13px;color:#d0c8b8;width:82px;flex-shrink:0; }
+.li-cn{ font-size:10px;color:#6a7a6a;flex:1;line-height:1.3; }
+.li-actions{ display:flex;gap:2px;flex-shrink:0; }
+.li-btn{
+  height:17px;padding:0 5px;border-radius:8px;
+  font-size:9px;font-family:"Noto Serif SC",serif;
+  cursor:pointer;border:1px solid;
+  transition:all .1s;display:flex;align-items:center;background:transparent;
+}
+.li-btn.k{ border-color:rgba(126,184,154,.2);color:#4a7a5e; }
+.li-btn.k:hover,.li-btn.k.on{ background:rgba(var(--accent-rgb),.12);border-color:var(--accent);color:var(--accent); }
+.li-btn.u{ border-color:rgba(192,112,112,.2);color:#804050; }
+.li-btn.u:hover,.li-btn.u.on{ background:rgba(192,112,112,.12);border-color:#c07070;color:#c07070; }
+.li-btn.f{ border-color:rgba(201,169,110,.2);color:#806830; }
+.li-btn.f:hover,.li-btn.f.on{ background:rgba(201,169,110,.12);border-color:#c9a96e;color:#c9a96e; }
+.list-empty{
+  text-align:center;padding:40px 16px;
+  color:#2a3a2e;font-size:11px;line-height:2.2;
+}
+.list-empty-icon{ font-size:24px;margin-bottom:6px;opacity:.4; }
+
+
+/* list count bar */
+.list-count-bar{
+  padding:4px 14px 3px;
+  font-size:9px;color:#2a3a2e;
+  font-family:"EB Garamond",serif;
+  letter-spacing:.06em;
+  border-bottom:1px solid rgba(42,56,48,0.2);
+  flex-shrink:0;
+}
+/* scrollbar */
+.list-body::-webkit-scrollbar{ width:3px; }
+.list-body::-webkit-scrollbar-track{ background:transparent; }
+.list-body::-webkit-scrollbar-thumb{ background:rgba(126,184,154,0.18);border-radius:2px; }
+.list-body::-webkit-scrollbar-thumb:hover{ background:rgba(126,184,154,0.35); }
+/* list item: two-line layout */
+.li-word-row{ display:flex;align-items:baseline;gap:6px; }
+.li-ph{ font-family:"EB Garamond",serif;font-size:10px;color:#2a4a34;font-style:italic; }
+.li-cn{ font-size:10px;color:#6a7a6e;line-height:1.2;margin-top:0; }
+/* progress dot on list item */
+.li-dot{ width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:1px;
+  background:rgba(255,255,255,0.08); }
+.li-dot.k{ background:var(--accent2); }
+.li-dot.u{ background:#8a4a4a; }
+.li-dot.f{ background:#8a7040; }
+
+
+.filt-fav-btn{
+  height:19px;width:22px;
+  border-radius:10px;
+  border:1px solid rgba(201,169,110,0.25);
+  background:transparent;color:#6a5a2e;
+  font-size:11px;cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;
+  padding:0;flex-shrink:0;
+}
+.filt-fav-btn:hover{ border-color:#c9a96e;color:#c9a96e;background:rgba(201,169,110,.1); }
+.filt-fav-btn.has-favs{ color:var(--accent);border-color:rgba(var(--accent-rgb),0.4); }
+
+
+/* word detail modal */
+.word-detail{
+  position:fixed;left:50%;bottom:0;
+  transform:translate(-50%,100%);
+  width:298px;z-index:500;
+  background:var(--panel-bg);
+  border:1px solid rgba(var(--accent-rgb),0.22);
+  border-radius:18px 18px 0 0;
+  padding:0;
+  display:none;flex-direction:column;
+  box-shadow:0 -8px 40px rgba(0,0,0,0.55);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  max-height:90%;overflow:hidden;
+}
+.word-detail.on{
+  display:flex;transform:translate(-50%,0);
+}
+.detail-overlay{
+  position:fixed;inset:0;z-index:499;
+  background:rgba(0,0,0,0.35);display:none;
+  backdrop-filter:blur(2px);
+}
+.detail-overlay.on{ display:block; }
+
+/* drag handle */
+.detail-handle{
+  width:36px;height:4px;border-radius:2px;
+  background:rgba(var(--accent-rgb),0.2);
+  margin:10px auto 0;flex-shrink:0;
+}
+/* header */
+.detail-header{
+  padding:10px 16px 8px;
+  border-bottom:1px solid rgba(var(--accent-rgb),0.1);
+  flex-shrink:0;
+}
+.detail-title-row{
+  display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+}
+.detail-word{
+  font-family:"EB Garamond",serif;font-size:30px;font-weight:500;
+  color:var(--text);letter-spacing:-.02em;line-height:1;flex:1;
+}
+.detail-speak{
+  width:28px;height:28px;border-radius:50%;
+  border:1px solid rgba(var(--accent-rgb),0.2);
+  background:transparent;color:var(--text-muted);
+  font-size:14px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;margin-top:2px;
+}
+.detail-speak:hover{ background:rgba(var(--accent-rgb),0.1);color:var(--accent); }
+.detail-meta{
+  display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;
+}
+.detail-ph{
+  font-family:"EB Garamond",serif;font-size:12px;
+  color:var(--text-muted);font-style:italic;
+}
+.detail-pos{
+  font-size:9px;color:var(--text-dim);
+  background:rgba(var(--accent-rgb),0.08);
+  border-radius:4px;padding:1px 5px;
+  font-family:"EB Garamond",serif;
+}
+.detail-cat{
+  font-size:9px;letter-spacing:.1em;
+  color:var(--accent);border:1px solid rgba(var(--accent-rgb),.25);
+  border-radius:10px;padding:1px 7px;
+  font-family:"EB Garamond",serif;text-transform:uppercase;
+}
+.detail-status-row{
+  display:flex;gap:5px;margin-top:6px;
+}
+.detail-status{
+  font-size:9px;padding:2px 8px;border-radius:10px;
+  border:1px solid rgba(255,255,255,0.06);color:var(--text-dim);
+  background:transparent;
+}
+.detail-status.known{ border-color:rgba(var(--accent-rgb),.3);color:var(--accent);background:rgba(var(--accent-rgb),.08); }
+.detail-status.unknown{ border-color:rgba(192,112,112,.3);color:#c07070;background:rgba(192,112,112,.08); }
+.detail-status.faved{ border-color:rgba(201,169,110,.3);color:#c9a96e;background:rgba(201,169,110,.08); }
+
+/* body */
+.detail-body{
+  overflow-y:auto;padding:12px 16px;
+  display:flex;flex-direction:column;gap:10px;
+  flex:1;
+}
+.detail-body::-webkit-scrollbar{ width:3px; }
+.detail-body::-webkit-scrollbar-thumb{ background:rgba(var(--accent-rgb),0.15);border-radius:2px; }
+
+.detail-cn{
+  font-size:18px;font-weight:500;color:var(--text);line-height:1.4;
+}
+.detail-en{
+  font-family:"EB Garamond",serif;font-size:12px;
+  color:var(--text-muted);font-style:italic;line-height:1.6;
+  border-left:2px solid rgba(var(--accent-rgb),0.2);
+  padding-left:8px;
+}
+.detail-section-title{
+  font-size:9px;color:var(--text-dim);letter-spacing:.12em;
+  text-transform:uppercase;font-family:"EB Garamond",serif;
+  margin-bottom:3px;
+}
+.detail-example{
+  background:rgba(var(--accent-rgb),0.04);
+  border:1px solid rgba(var(--accent-rgb),0.1);
+  border-radius:8px;padding:8px 10px;
+}
+.detail-ex-en{
+  font-family:"EB Garamond",serif;font-size:12px;
+  color:var(--text-muted);font-style:italic;line-height:1.6;
+}
+.detail-ex-cn{
+  font-size:10px;color:var(--text-dim);margin-top:3px;line-height:1.4;
+}
+.detail-no-content{
+  font-size:10px;color:var(--text-dim);
+  text-align:center;padding:8px 0;font-style:italic;
+}
+
+/* footer actions */
+.detail-actions{
+  display:flex;gap:6px;
+  padding:10px 16px 14px;
+  border-top:1px solid rgba(var(--accent-rgb),0.08);
+  flex-shrink:0;
+}
+.detail-btn{
+  flex:1;height:32px;border-radius:16px;border:1px solid;
+  font-size:10px;font-family:"Noto Serif SC",serif;
+  cursor:pointer;transition:all .15s;background:transparent;
+}
+.detail-btn.k{ border-color:rgba(var(--accent-rgb),.25);color:var(--text-muted); }
+.detail-btn.k.on,.detail-btn.k:hover{ background:rgba(var(--accent-rgb),.1);border-color:var(--accent);color:var(--accent); }
+.detail-btn.u{ border-color:rgba(192,112,112,.25);color:var(--text-muted); }
+.detail-btn.u.on,.detail-btn.u:hover{ background:rgba(192,112,112,.1);border-color:#c07070;color:#c07070; }
+.detail-btn.f{ border-color:rgba(201,169,110,.25);color:var(--text-muted); }
+.detail-btn.f.on,.detail-btn.f:hover{ background:rgba(201,169,110,.1);border-color:#c9a96e;color:#c9a96e; }
+
+
+.theme-light .streak-banner{ color:#7a5a10;background:rgba(180,140,40,.08);border-bottom-color:rgba(180,140,40,.2); }
+.theme-light .cat-tag{ color:var(--accent2); }
+.theme-light .ph,.theme-light .pos{ color:var(--text-dim); }
+.theme-light .tap-hint{ color:var(--text-dim); }
+.theme-light .card-fav{ border-color:rgba(0,0,0,0.1);color:var(--text-dim); }
+.theme-light .tbtn.close:hover{ background:rgba(180,60,60,.1);color:#a03030; }
+.theme-light .stat{ color:var(--text-muted); }
+.theme-light .streak{ background:rgba(180,140,40,.1);border-color:rgba(180,140,40,.3);color:#7a5a10; }
+.theme-light .prog-fill{ background:linear-gradient(90deg,var(--accent2),var(--accent)); }
+.theme-light .prog-info{ color:var(--text-dim); }
+.theme-light .fi-title,.theme-light .fi-sub{ color:var(--text); }
+.theme-light .fi-stats{ background:rgba(0,0,0,.03);border-color:rgba(180,200,185,.6); }
+.theme-light .fis .l{ color:var(--text-dim); }
+.theme-light .list-header{ background:rgba(0,0,0,.02); }
+.theme-light .list-title{ color:var(--text-muted); }
+.theme-light .list-count-bar{ color:var(--text-dim); }
+.theme-light .list-search input{ color:var(--text);background:rgba(0,0,0,.04); }
+.theme-light .list-empty{ color:var(--text-dim); }
+.theme-light .theme-panel{ border-bottom-color:rgba(var(--accent-rgb),.15); }
+
+</style>
+</head>
+<body>
+<div class="widget" id="widget">
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="tbtn pin on" id="pin-btn" onclick="togglePin()" title="置顶">&#8853;</button>
+    </div>
+    <div class="topbar-right">
+      <input class="opacity-range-inline" id="opacity-range" type="range" min="20" max="100" value="100" oninput="setOpacity(this.value)" title="透明度">
+      <button class="tbtn" id="speak-btn" onclick="speakCurrent()" title="朗读">&#9834;</button>
+      <button class="tbtn" id="mute-btn" onclick="toggleSilent()" title="静音">&#128264;</button>
+      <button class="tbtn" id="theme-btn" onclick="toggleThemePanel()" title="主题">&#9680;</button>
+      <button class="tbtn" onclick="openList('k')" title="单词列表">&#8801;</button>
+      <button class="tbtn" onclick="prevCard()" title="上一个">&#8249;</button>
+      <button class="tbtn" onclick="skipCard()" title="跳过">&#8250;</button>
+      <button class="tbtn close" onclick="quitApp()" title="退出">&times;</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <!-- Mini mode bar -->
+  <div class="mini-bar" id="mini-bar">
+    <div class="mini-word" id="mini-word" onclick="miniToggleReveal()" title="点击翻面">—</div>
+    <div class="mini-cn" id="mini-cn"></div>
+    <div class="mini-prog" id="mini-prog"></div>
+    <button class="mini-toggle" onclick="toggleMini()" title="展开">⊞</button>
+  </div>
+  <!-- Daily streak banner -->
+  <div class="theme-panel" id="theme-panel">
+    <div class="theme-panel-title">主题配色</div>
+    <div class="theme-opt active" data-theme="" onclick="setTheme('')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#4a7a62,#7eb89a)"></div>
+      <span class="theme-label">森林绿</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-blue" onclick="setTheme('theme-blue')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#3a5a82,#7ab0d8)"></div>
+      <span class="theme-label">深海蓝</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-purple" onclick="setTheme('theme-purple')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#5a3a82,#a87ad8)"></div>
+      <span class="theme-label">暮光紫</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-amber" onclick="setTheme('theme-amber')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#7a5a20,#d4a84b)"></div>
+      <span class="theme-label">琥珀金</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-rose" onclick="setTheme('theme-rose')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#823a48,#d87a8a)"></div>
+      <span class="theme-label">玫瑰红</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-light" onclick="setTheme('theme-light')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#2a5a40,#3a7a5a)"></div>
+      <span class="theme-label">淡雅白</span>
+    </div>
+  </div>
+  <div class="streak-banner hide" id="streak-banner"></div>
+  <div style="position:relative">
+  <div class="filter-bar" id="filter-bar">
+    <button class="filt-btn" data-f="c" onclick="setFilter('c')" style="--fc:#c9a96e" title="仅核心词 (~380词)">核心</button>
+    <button class="filt-btn" data-f="h" onclick="setFilter('h')" style="--fc:#7eb89a" title="核心+高频 (~4500词)">高频</button>
+    <button class="filt-btn" data-f="b" onclick="setFilter('b')" style="--fc:#7aabcc" title="核心+高频+基础 (~7200词)">基础</button>
+    <button class="filt-btn active" data-f="all" onclick="setFilter('all')" style="--fc:#c07070" title="全部8079词">所有</button>
+    <button class="filt-btn" data-f="x" onclick="setFilter('x')" style="--fc:#d480c0" title="自己添加的词">自定义</button>
+    <span class="filter-count" id="filter-count">8079 词</span>
+    <button class="filt-fav-btn" id="filt-fav-btn" onclick="reviewFavQuick()" title="复习收藏单词">复习</button>
+  </div>
+  </div>
+
+  <!-- Study view -->
+  <div id="study-view">
+    <div class="body" id="body-click" onclick="revealAnswer()">
+      <div class="card-inner" id="card-inner">
+        <!-- Front: word -->
+        <div class="card-front">
+          <div class="cat-tag" id="wcat">Academic</div>
+          <button class="card-fav" id="card-fav" onclick="toggleFav(event)" title="收藏">☆</button>
+          <div class="word-line">
+            <div class="word" id="word">—</div>
+            <div class="pos" id="pos"></div>
+          </div>
+          <div class="ph" id="ph"></div>
+          <div class="tap-hint" id="hint">— 点击显示释义 —</div>
+        </div>
+        <!-- Back: answer -->
+        <div class="card-back">
+          <div class="cat-tag" id="wcat-back" style="opacity:.6"></div>
+          <div class="word" id="word-back" style="font-size:20px;margin-bottom:8px"></div>
+          <div class="answer" id="answer" style="max-height:none;overflow:visible;opacity:1">
+            <div class="def-cn" id="def-cn"></div>
+            <div class="def-en" id="def-en"></div>
+            <div class="example">
+              <div class="ex-en" id="ex-en"></div>
+              <div class="ex-cn" id="ex-cn"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+      <div class="prog-info">
+        <span id="pt">0 / 0</span>
+        <span id="pp">0%</span>
+      </div>
+    </div>
+
+    <div class="acts" id="acts" style="display:none">
+      <button class="btn bu" onclick="mark(false)">✗ 不认识</button>
+      <button class="btn bk" onclick="mark(true)">✓ 认识</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat k"><b id="sk">0</b> 认识</div>
+      <div class="streak">🔥 <span id="strk">0</span> 连胜</div>
+      <div class="stat u"><b id="su">0</b> 不认识</div>
+    </div>
+  </div>
+
+  <!-- Finish view -->
+  <div class="finish" id="finish-view">
+    <div class="fi-icon">🎉</div>
+    <div class="fi-title" id="fin-title">本轮完成！</div>
+    <div class="fi-sub" id="fin-sub"></div>
+    <div class="fi-stats">
+      <div class="fis k"><div class="n" id="fk">0</div><div class="l">认识</div></div>
+      <div class="fis u"><div class="n" id="fu">0</div><div class="l">不认识</div></div>
+      <div class="fis f"><div class="n" id="ff">0</div><div class="l">收藏</div></div>
+    </div>
+    <div class="fi-btns">
+      <button class="fb review" id="fb-rev" onclick="reviewUnknown()">复习不认识</button>
+      <button class="fb fav-rev" id="fb-fav" onclick="reviewFav()">复习收藏</button>
+      <button class="fb restart" onclick="restartAll()">重新开始</button>
+    </div>
+  </div>
+
+<!-- Word Detail Modal -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="word-detail" id="word-detail">
+  <div class="detail-handle"></div>
+  <div class="detail-header">
+    <div class="detail-title-row">
+      <div class="detail-word" id="detail-word"></div>
+      <button class="detail-speak" id="detail-speak-btn" onclick="detailSpeak()" title="朗读">♪</button>
+    </div>
+    <div class="detail-meta">
+      <span class="detail-ph" id="detail-ph"></span>
+      <span class="detail-pos" id="detail-pos"></span>
+      <span class="detail-cat" id="detail-cat"></span>
+    </div>
+    <div class="detail-status-row" id="detail-status-row"></div>
+  </div>
+  <div class="detail-body">
+    <div>
+      <div class="detail-cn" id="detail-cn"></div>
+      <div class="detail-en" id="detail-en"></div>
+    </div>
+    <div id="detail-example-wrap">
+      <div class="detail-section-title">例句</div>
+      <div class="detail-example" id="detail-example">
+        <div class="detail-ex-en" id="detail-ex-en"></div>
+        <div class="detail-ex-cn" id="detail-ex-cn"></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <button class="detail-btn k" id="dbk" onclick="detailMark('k')">✓ 认识</button>
+    <button class="detail-btn u" id="dbu" onclick="detailMark('u')">✗ 不认识</button>
+    <button class="detail-btn f" id="dbf" onclick="detailMark('f')">★ 收藏</button>
+  </div>
+</div>
+
+</div>
+
+<!-- Word List Panel -->
+<div class="list-overlay" id="list-overlay" onclick="closeList()">
+  <div class="list-panel" onclick="event.stopPropagation()">
+    <div class="list-header" id="list-header-drag">
+      <div class="list-header-drag">
+        <div class="list-title">WORDS</div>
+        <div class="list-tabs">
+          <button class="ltab active" data-t="k" onclick="switchListTab('k')">认识</button>
+          <button class="ltab" data-t="u" onclick="switchListTab('u')">不认识</button>
+          <button class="ltab" data-t="f" onclick="switchListTab('f')">★ 收藏</button>
+        </div>
+      </div>
+      <button class="list-close" onclick="closeList()">×</button>
+    </div>
+    <div class="list-search">
+      <input id="list-search-input" placeholder="搜索单词…" oninput="renderList()" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="list-count-bar" id="list-count-bar"></div>
+    <div class="list-body" id="list-body"></div>
+  </div>
+</div>
+<script src="vocab.js"></script>
+
+<script>
+
+// ── Convert array vocab to object format ──────────────────────────────────
+// vocab.js exports: const vocab = [[word, chinese, level, category], ...]
+// category: c=core, h=high_freq, b=basic, a=advanced
+const CAT_LABEL = { c:'核心词汇', h:'高频词汇', b:'基础词汇', a:'进阶词汇', x:'自定义词' };
+const CAT_COLOR = { c:'#c9a96e', h:'#7eb89a', b:'#7aabcc', a:'#c07070', x:'#d480c0' };
+let ALL = vocab.map(v => ({
+  w: v[0], cn: v[1], lv: v[2], cat: v[3] || 'h',
+  p: '', ph: '', en: '', ee: '', ec: '',
+  c: CAT_LABEL[v[3]] || '高频学术'
+}));
+const WORD_MAP = {};
+ALL.forEach(v => { WORD_MAP[v.w] = v; });
+
+// File I/O helpers (must be before custom vocab loading)
+const _fs   = (typeof require !== 'undefined') ? require('fs')   : null;
+const _path2 = (typeof require !== 'undefined') ? require('path') : null;
+const _stateFile = (_fs && _path2) ? _path2.join(process.env.APPDATA || '', 'ielts-widget', 'progress.json') : null;
+if (_fs && _stateFile) { try { _fs.mkdirSync(_path2.dirname(_stateFile), {recursive:true}); } catch(e) {} }
+
+// Load custom vocab additions and deletions
+var _customData = null;
+try {
+  const _cfile = (_fs && _path2) ? _path2.join(process.env.APPDATA || '', 'ielts-widget', 'custom_vocab.json') : null;
+  if (_fs && _cfile && _fs.existsSync(_cfile)) {
+    _customData = JSON.parse(_fs.readFileSync(_cfile, 'utf8'));
+    // Add custom words
+    (_customData.words || []).forEach(v => {
+      if (!WORD_MAP[v.w]) {
+        const entry = { w:v.w, cn:v.cn||'', lv:2, cat:v.cat||'h', p:v.p||'', ph:v.ph||'', en:v.en||'', ee:v.ee||'', ec:'', c: CAT_LABEL[v.cat]||'自定义', _custom:true };
+        ALL.push(entry);
+        WORD_MAP[v.w] = entry;
+      }
+    });
+    // Remove deleted words
+    const deleted = new Set(_customData.deleted || []);
+    if (deleted.size > 0) {
+      ALL = ALL.filter(v => !deleted.has(v.w));
+      deleted.forEach(w => { delete WORD_MAP[w]; });
+    }
+  }
+  // Apply category overrides (user reclassified words)
+  if (_customData && _customData.categories) {
+    Object.keys(_customData.categories).forEach(function(k) {
+      var entry = WORD_MAP[k];
+      if (entry) {
+        entry.cat = _customData.categories[k];
+        entry.c = CAT_LABEL[_customData.categories[k]] || entry.c;
+      }
+    });
+  }
+  // Apply priority flags (starred words appear first)
+  if (_customData && _customData.priority) {
+    var _priSet = new Set(_customData.priority || []);
+    ALL.forEach(function(v) { if (_priSet.has(v.w)) v._pri = true; });
+  }
+} catch(e) {}
+
+// Filter includes: c=核心only, h=核心+高频, b=核心+高频+基础, all=全部
+const CAT_INCLUDES = { c:['c'], h:['c','h'], b:['c','h','b'], all:['c','h','b','a'], x:['x'] };
+let activeFilter = 'all';
+function getFilteredWords() {
+  if (activeFilter === 'x') return ALL.filter(v => v._custom === true);
+  if (activeFilter === 'all') return ALL;
+  const allowed = CAT_INCLUDES[activeFilter] || ['c','h','b','a'];
+  return ALL.filter(v => allowed.includes(v.cat) && !v._custom);
+}
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filt-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.f === f);
+  });
+  const words = getFilteredWords();
+  const lbl = document.getElementById('filter-count');
+  if (lbl) lbl.textContent = words.length + ' 词';
+  buildDeck(words); renderCard();
+}
+
+// ── Electron IPC ───────────────────────────────────────────────────────────
+let ipc = null;
+try {
+  let e;
+  try { e = require('electron/renderer'); } catch(_) {}
+  if (!e || !e.ipcRenderer) { e = require('electron'); }
+  ipc = e.ipcRenderer || null;
+} catch(err) {}
+
+// ── JS Drag (no webkit-app-region needed) ────────────────────────────────
+{
+  let _drag = false;
+  document.getElementById('topbar').addEventListener('mousedown', e => {
+    const t = e.target;
+    if (t.tagName === 'BUTTON' || t.tagName === 'INPUT' || t.closest('button') || t.closest('input')) return;
+    e.preventDefault();
+    _drag = true;
+    if (ipc) ipc.send('win-drag-start', e.screenX, e.screenY);
+  });
+  document.addEventListener('mousemove', e => { if(_drag && ipc) ipc.send('win-drag-move', e.screenX, e.screenY); });
+  document.addEventListener('mouseup', () => { if(_drag && ipc) ipc.send('win-drag-end'); _drag=false; });
+}
+
+function quitApp() {
+  if (ipc) ipc.send('win-quit');
+  else window.close();
+}
+
+// ── Drag (fallback for non-Electron) ──────────────────────────────────────
+if (!ipc) {
+  let drag = false, ox = 0, oy = 0;
+  document.getElementById('topbar').addEventListener('mousedown', e => {
+    if (e.target.closest('.topbar-right')) return;
+    drag = true; ox = e.clientX; oy = e.clientY;
+  });
+  document.addEventListener('mousemove', e => {
+    if (!drag) return;
+    window.scrollBy(-(e.clientX - ox), -(e.clientY - oy));
+    ox = e.clientX; oy = e.clientY;
+  });
+  document.addEventListener('mouseup', () => drag = false);
+}
+
+// ── Silent / No-anim toggles ──────────────────────────────────────────────
+function toggleSilent() {
+  isSilent = !isSilent;
+  var b = document.getElementById('mute-btn');
+  if (b) {
+    b.classList.toggle('on', isSilent);
+    b.innerHTML = isSilent ? '&#128263;' : '&#128264;';
+  }
+  if (isSilent && window.speechSynthesis) { window.speechSynthesis.cancel(); }
+  try { localStorage.setItem('ielts_silent', isSilent ? '1' : '0'); } catch(_) {}
+}
+function toggleAnim() {
+  noAnim = !noAnim;
+  var b = document.getElementById('anim-btn');
+  if (b) b.classList.toggle('on', noAnim);
+  document.getElementById('widget').classList.toggle('no-anim', noAnim);
+  try { localStorage.setItem('ielts_noanim', noAnim ? '1' : '0'); } catch(_) {}
+}
+// Load saved silent/anim state
+(function(){
+  try {
+    if (localStorage.getItem('ielts_silent') === '1') { isSilent = true; var mb = document.getElementById('mute-btn'); if (mb) mb.classList.add('on'); mb.innerHTML='&#128263;'; }
+    if (localStorage.getItem('ielts_noanim') === '1') { noAnim = true; var ab = document.getElementById('anim-btn'); if (ab) ab.classList.add('on'); document.getElementById('widget').classList.add('no-anim'); }
+  } catch(_) {}
+})();
+
+// ── Dim (opacity) ─────────────────────────────────────────────────────────
+function toggleDim() {
+  dimmed = !dimmed;
+  if (ipc) {
+    ipc.send('win-opacity', dimmed ? 0.2 : 1);
+  } else {
+    document.getElementById('widget').style.opacity = dimmed ? 0.2 : 1;
+  }
+  document.getElementById('dim-overlay').style.display = dimmed ? 'block' : 'none';
+}
+function undim() {
+  if (!dimmed) return;
+  dimmed = false;
+  if (ipc) ipc.send('win-opacity', 1);
+  else document.getElementById('widget').style.opacity = 1;
+  document.getElementById('dim-overlay').style.display = 'none';
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
+const SAVE = "ielts_state_v4";
+
+function _readProgress() {
+  if (!_fs || !_stateFile) return {};
+  try { return JSON.parse(_fs.readFileSync(_stateFile, 'utf8')); } catch(e) { return {}; }
+}
+function _writeProgress(obj) {
+  if (!_fs || !_stateFile) return;
+  try { _fs.writeFileSync(_stateFile, JSON.stringify(obj), 'utf8'); } catch(e) {}
+}
+let isMini = false;
+let isSilent = false;
+let noAnim = false;
+let listTab = 'k';
+let _resizeTimer = null;
+let pinned = true;
+let dimmed = false;
+let deck = [], known = new Set(), unknown = new Set(), favs = new Set();
+let idx = 0, revealed = false, streak = 0, isReview = false;
+// Spaced repetition: words pending re-review [{w, due}]
+let srQueue = [];
+// Daily stats
+let dailyStats = { date:'', count:0, dayStreak:0 };
+
+function todayStr() {
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function loadState() {
+  try {
+    const d = _readProgress();
+    if (!d || Object.keys(d).length === 0) return;
+    known   = new Set(d.known   || []);
+    unknown = new Set(d.unknown || []);
+    favs    = new Set(d.favs    || []);
+    streak  = d.streak || 0;
+    srQueue = d.srQueue || [];
+    dailyStats = d.dailyStats || { date:'', count:0, dayStreak:0 };
+    const today = todayStr();
+    if (dailyStats.date !== today) {
+      const wasYesterday = dailyStats.date === (() => {
+        const y = new Date(); y.setDate(y.getDate()-1);
+        return y.getFullYear()+'-'+String(y.getMonth()+1).padStart(2,'0')+'-'+String(y.getDate()).padStart(2,'0');
+      })();
+      dailyStats = { date: today, count: 0, dayStreak: wasYesterday ? (dailyStats.dayStreak||0)+1 : 1 };
+    }
+  } catch(e) {}
+}
+function saveState() {
+  try {
+    _writeProgress({
+      known:[...known], unknown:[...unknown], favs:[...favs], streak,
+      srQueue, dailyStats
+    });
+  } catch(e) {}
+}
+
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+function buildDeck(words) {
+  const now = Date.now();
+  // Collect SR due words (not in current word list to avoid collision)
+  const srDue = srQueue.filter(e => e.due <= now).map(e => WORD_MAP[e.w]).filter(Boolean);
+  // Remove from srQueue
+  srQueue = srQueue.filter(e => e.due > now);
+  // Interleave SR words every 5 cards
+  var _priW = words.filter(function(v){return v._pri;});
+  var _norW = words.filter(function(v){return !v._pri;});
+  var base = shuffle([].concat(_priW)).concat(shuffle([].concat(_norW)));
+  deck = [];
+  var srIdx = 0;
+  for (var i = 0; i < base.length; i++) {
+    if (srIdx < srDue.length && i > 0 && i % 5 === 0) {
+      deck.push({ ...srDue[srIdx++], _sr: true });
+    }
+    deck.push(base[i]);
+  }
+  while (srIdx < srDue.length) deck.push({ ...srDue[srIdx++], _sr: true });
+  idx = 0;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+try {
+  loadState();
+  updateStreakBanner();
+  var fw = getFilteredWords();
+  if (!fw || fw.length === 0) {
+    document.getElementById('word').textContent = 'ERR: 词库为空';
+  } else {
+    buildDeck(fw);
+    renderCard();
+  }
+} catch(e) {
+  document.getElementById('word').textContent = 'ERR: ' + (e.message || 'init');
+}
+
+function renderCard() {
+  try {
+  document.getElementById('finish-view').classList.remove('on');
+  document.getElementById('study-view').style.display = '';
+  document.getElementById('acts').style.display = 'none';
+
+  if (!deck || idx >= deck.length) { showFinish(); return; }
+
+  const v = deck[idx];
+  const catEl = document.getElementById('wcat');
+  catEl.textContent = v.c;
+  catEl.style.color = CAT_COLOR[v.cat] || '#7eb89a';
+  catEl.style.borderColor = (CAT_COLOR[v.cat] || '#7eb89a') + '55';
+  document.getElementById('word').textContent = v.w;
+  document.getElementById('pos').textContent = v.p;
+  document.getElementById('ph').textContent = v.ph;
+  document.getElementById('def-cn').textContent = v.cn;
+  document.getElementById('def-en').textContent = v.en;
+  document.getElementById('ex-en').textContent = v.ee;
+  document.getElementById('ex-cn').textContent = v.ec;
+
+  const _inner = document.getElementById('card-inner');
+  if (_inner) _inner.classList.remove('flipped');
+  document.getElementById('hint').classList.remove('hide');
+  revealed = false;
+
+  // Update fav star
+  const fb = document.getElementById('card-fav');
+  if (favs.has(v.w)) { fb.textContent = '★'; fb.classList.add('on'); }
+  else { fb.textContent = '☆'; fb.classList.remove('on'); }
+
+  updateHUD();
+  updateMiniBar();
+  autoResize();
+  setTimeout(() => speak(v.w), 350);
+  } catch(e) { console.error('renderCard:', e); }
+}
+
+function revealAnswer() {
+  const inner = document.getElementById('card-inner');
+  if (!revealed) {
+    revealed = true;
+    const v = deck && deck[idx];
+    if (v) {
+      const wb = document.getElementById('word-back');
+      const cb = document.getElementById('wcat-back');
+      if (wb) wb.textContent = v.w;
+      if (cb) cb.textContent = document.getElementById('wcat').textContent;
+    }
+    inner && inner.classList.add('flipped');
+    document.getElementById('acts').style.display = 'flex';
+    setTimeout(autoResize, 500);
+  } else {
+    revealed = false;
+    inner && inner.classList.remove('flipped');
+    document.getElementById('acts').style.display = 'none';
+    setTimeout(autoResize, 480);
+  }
+}
+
+function skipCard() { if (idx < deck.length) { idx++; renderCard(); } }
+function prevCard() { if (idx > 0) { idx = Math.max(0, idx-1); renderCard(); } }
+
+function mark(isKnown) {
+  const v = deck[idx]; if (!v) return;
+  if (isKnown) {
+    known.add(v.w); unknown.delete(v.w); streak++;
+    // Remove from SR queue if it was there
+    srQueue = srQueue.filter(e => e.w !== v.w);
+  } else {
+    unknown.add(v.w); known.delete(v.w); streak = 0;
+    // Schedule SR: re-show in ~5 new cards (roughly 30s-2min later)
+    if (!v._sr) {
+      srQueue = srQueue.filter(e => e.w !== v.w);
+      srQueue.push({ w: v.w, due: Date.now() + 60000 }); // re-due in 60s
+    }
+  }
+  // Daily count
+  dailyStats.count++;
+  saveState();
+  idx++;
+  updateStreakBanner();
+  renderCard();
+}
+
+function toggleFav(e) {
+  e.stopPropagation();
+  const v = deck[idx]; if (!v) return;
+  if (favs.has(v.w)) favs.delete(v.w); else favs.add(v.w);
+  saveState();
+  const fb = document.getElementById('card-fav');
+  if (favs.has(v.w)) { fb.textContent = '★'; fb.classList.add('on'); }
+  else { fb.textContent = '☆'; fb.classList.remove('on'); }
+}
+
+function showFinish() {
+  document.getElementById('study-view').style.display = 'none';
+  document.getElementById('finish-view').classList.add('on');
+  document.getElementById('fin-title').textContent = isReview ? '复习完成！' : '本轮完成！';
+  document.getElementById('fin-sub').textContent =
+    `认识 ${known.size} 个 · 还有 ${unknown.size} 个需复习`;
+  document.getElementById('fk').textContent = known.size;
+  document.getElementById('fu').textContent = unknown.size;
+  document.getElementById('ff').textContent = favs.size;
+  document.getElementById('fb-rev').style.display = unknown.size > 0 ? '' : 'none';
+  document.getElementById('fb-fav').style.display = favs.size > 0 ? '' : 'none';
+  autoResize();
+}
+
+function reviewUnknown() {
+  const words = ALL.filter(v => unknown.has(v.w));
+  if (!words.length) return;
+  isReview = true; buildDeck(words); renderCard();
+}
+
+function reviewFav() {
+  const words = ALL.filter(v => favs.has(v.w));
+  if (!words.length) return;
+  isReview = true; buildDeck(words); renderCard();
+}
+
+function restartAll() {
+  known.clear(); unknown.clear(); streak = 0;
+  saveState(); isReview = false; buildDeck(getFilteredWords()); renderCard();
+}
+
+function updateHUD() {
+  const filtered = getFilteredWords();
+  const total = filtered.length, done = known.size + unknown.size;
+  document.getElementById('sk').textContent = known.size;
+  document.getElementById('su').textContent = unknown.size;
+  document.getElementById('strk').textContent = streak;
+  const pct = Math.round(done / total * 100);
+  document.getElementById('pf').style.width = pct + '%';
+  document.getElementById('pt').textContent = done + ' / ' + total;
+  document.getElementById('pp').textContent = pct + '%';
+  const fb2 = document.getElementById('filt-fav-btn');
+  if (fb2) { fb2.classList.toggle('has-favs', favs.size > 0); }
+}
+
+
+// ── Auto resize window height ────────────────────────────────────────────
+function autoResize() {
+  if (!ipc) return;
+  clearTimeout(_resizeTimer);
+  _resizeTimer = setTimeout(() => {
+    requestAnimationFrame(() => {
+      const widget = document.getElementById('widget');
+      const h = widget.offsetHeight + 2;
+      if (ipc) ipc.send('win-resize', 300, Math.min(Math.max(h, 160), 540));
+    });
+  }, 80);
+}
+
+// ── Opacity ─────────────────────────────────────────────────────────────
+
+function setOpacity(val) {
+  const v = parseInt(val) / 100;
+  if (ipc) ipc.send('win-opacity', v);
+  else document.getElementById('widget').style.opacity = v;
+  document.getElementById('opacity-range').value = val;
+}
+
+
+// ── Word Detail Modal ────────────────────────────────────────────────────
+function openDetail(word) {
+  const v = ALL.find(x => x.w === word);
+  if (!v) return;
+  window._detailWord = word;
+
+  document.getElementById('detail-word').textContent = v.w;
+  document.getElementById('detail-ph').textContent = v.ph ? v.ph : '';
+  document.getElementById('detail-pos').textContent = v.p || '';
+  document.getElementById('detail-cat').textContent = v.c || '';
+  document.getElementById('detail-cn').textContent = v.cn;
+
+  // English definition
+  const enEl = document.getElementById('detail-en');
+  enEl.textContent = v.en || '';
+  enEl.style.display = v.en ? 'block' : 'none';
+
+  // Example
+  const exWrap = document.getElementById('detail-example-wrap');
+  if (v.ee) {
+    document.getElementById('detail-ex-en').textContent = v.ee;
+    document.getElementById('detail-ex-cn').textContent = v.ec || '';
+    exWrap.style.display = 'block';
+  } else {
+    exWrap.style.display = 'none';
+  }
+
+  // Status tags
+  const ik = known.has(word), iu = unknown.has(word), ifav = favs.has(word);
+  const sr = document.getElementById('detail-status-row');
+  const tags = [];
+  if (ik)   tags.push('<span class="detail-status known">✓ 已认识</span>');
+  if (iu)   tags.push('<span class="detail-status unknown">✗ 待复习</span>');
+  if (ifav) tags.push('<span class="detail-status faved">★ 已收藏</span>');
+  if (!ik && !iu) tags.push('<span class="detail-status">未学习</span>');
+  sr.innerHTML = tags.join('');
+
+  // Action btn states
+  document.getElementById('dbk').classList.toggle('on', ik);
+  document.getElementById('dbu').classList.toggle('on', iu);
+  document.getElementById('dbf').classList.toggle('on', ifav);
+
+  document.getElementById('detail-overlay').classList.add('on');
+  document.getElementById('word-detail').classList.add('on');
+
+  // Auto speak
+  speak(word);
+}
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('on');
+  document.getElementById('word-detail').classList.remove('on');
+  window._detailWord = null;
+}
+function detailSpeak() {
+  const word = window._detailWord; if (!word) return;
+  const btn = document.getElementById('detail-speak-btn');
+  if (btn) { btn.textContent = '…'; }
+  const u = new SpeechSynthesisUtterance(word);
+  u.lang = 'en-US'; u.rate = 0.85;
+  u.onend = () => { if (btn) btn.textContent = '♪'; };
+  u.onerror = () => { if (btn) btn.textContent = '♪'; };
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(u);
+}
+function detailMark(action) {
+  const word = window._detailWord; if (!word) return;
+  if (action === 'k') { known.add(word); unknown.delete(word); }
+  else if (action === 'u') { unknown.add(word); known.delete(word); }
+  else if (action === 'f') { if (favs.has(word)) favs.delete(word); else favs.add(word); }
+  saveState(); updateHUD(); renderList();
+  const ik = known.has(word), iu = unknown.has(word), ifav = favs.has(word);
+  document.getElementById('dbk').classList.toggle('on', ik);
+  document.getElementById('dbu').classList.toggle('on', iu);
+  document.getElementById('dbf').classList.toggle('on', ifav);
+  // refresh status tags
+  const sr = document.getElementById('detail-status-row');
+  if (sr) {
+    const tags = [];
+    if (ik)   tags.push('<span class="detail-status known">✓ 已认识</span>');
+    if (iu)   tags.push('<span class="detail-status unknown">✗ 待复习</span>');
+    if (ifav) tags.push('<span class="detail-status faved">★ 已收藏</span>');
+    if (!ik && !iu) tags.push('<span class="detail-status">未学习</span>');
+    sr.innerHTML = tags.join('');
+  }
+}
+
+// ── Word List Panel ───────────────────────────────────────────────────────────────────────
+function openList(tab) {
+  const overlay = document.getElementById('list-overlay');
+  if (overlay.classList.contains('on')) { closeList(); return; }
+  listTab = tab || 'k';
+  overlay.classList.add('on');
+  renderList();
+}
+function closeList() {
+  document.getElementById('list-overlay').classList.remove('on');
+}
+function switchListTab(t) {
+  listTab = t;
+  document.querySelectorAll('.ltab').forEach(b => b.classList.toggle('active', b.dataset.t===t));
+  renderList();
+}
+function renderList() {
+  const body = document.getElementById('list-body');
+  const countBar = document.getElementById('list-count-bar');
+  let words;
+  if (listTab==='k') words = ALL.filter(v => known.has(v.w));
+  else if (listTab==='u') words = ALL.filter(v => unknown.has(v.w));
+  else words = ALL.filter(v => favs.has(v.w));
+  const q = (document.getElementById('list-search-input')?.value||'').trim().toLowerCase();
+  if (q) words = words.filter(v => v.w.toLowerCase().includes(q) || v.cn.includes(q));
+  const total = {k:known.size, u:unknown.size, f:favs.size}[listTab] || 0;
+  if (countBar) {
+    const shown = q ? words.length + ' / ' + total : total;
+    const label = {k:'已认识', u:'不认识', f:'已收藏'}[listTab];
+    countBar.textContent = label + ' ' + shown + ' 词' + (q ? '（搜索中）' : '');
+  }
+  if (!words.length) {
+    const labels = {
+      k:'还没有认识的单词\n学完一张卡片后点"认识"即可',
+      u:'还没有不认识的单词',
+      f:'还没有收藏的单词\n在卡片右上角点 ☆ 即可收藏'
+    };
+    const _icons = {k:'📖',u:'📝',f:'⭐'};
+    body.innerHTML = '<div class="list-empty"><div class="list-empty-icon">'+(_icons[listTab]||'📋')+'</div>' + (labels[listTab]||'暂无数据').replace('\n','<br>') + '</div>';
+    return;
+  }
+  body.innerHTML = words.map(v => {
+    const ik = known.has(v.w), iu = unknown.has(v.w), ifav = favs.has(v.w);
+    const dotCls = ik ? 'k' : iu ? 'u' : '';
+    const ph = v.ph ? `<span class="li-ph">${v.ph}</span>` : '';
+    return `<div class="list-item" onclick="openDetail('${v.w}')" style="cursor:pointer">
+      <div class="li-dot ${dotCls}"></div>
+      <div style="flex:1;min-width:0">
+        <div class="li-word-row">
+          <span class="li-word">${v.w}</span>${ph}
+        </div>
+        <div class="li-cn">${v.cn}</div>
+      </div>
+      <div class="li-actions" onclick="event.stopPropagation()">
+        <button class="li-btn k ${ik?'on':''}" onclick="listMark('${v.w}','k')" title="认识">✓</button>
+        <button class="li-btn u ${iu?'on':''}" onclick="listMark('${v.w}','u')" title="不认识">✗</button>
+        <button class="li-btn f ${ifav?'on':''}" onclick="listMark('${v.w}','f')" title="收藏">★</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function listMark(word, action) {
+  if (action==='k') { known.add(word); unknown.delete(word); }
+  else if (action==='u') { unknown.add(word); known.delete(word); }
+  else if (action==='f') { if(favs.has(word)) favs.delete(word); else favs.add(word); }
+  saveState();
+  renderList();
+  updateHUD();
+}
+
+// ── Mini mode ─────────────────────────────────────────────────────────────
+function toggleMini() {
+  isMini = !isMini;
+  document.getElementById('widget').classList.toggle('mini', isMini);
+  updateMiniBar();
+  autoResize();
+}
+function updateMiniBar() {
+  if (!isMini) return;
+  var v = deck && deck[idx];
+  if (!v) return;
+  document.getElementById('mini-word').textContent = v.w;
+  document.getElementById('mini-cn').textContent = v.cn;
+  var total = getFilteredWords().length;
+  var done = known.size + unknown.size;
+  document.getElementById('mini-prog').textContent = done + '/' + total + ' (' + Math.round(done/Math.max(1,total)*100) + '%)';
+}
+
+// ── Daily streak banner ───────────────────────────────────────────────────
+function updateStreakBanner() {
+  const el = document.getElementById('streak-banner');
+  if (dailyStats.dayStreak >= 2 || dailyStats.count >= 10) {
+    el.classList.remove('hide');
+    el.textContent = `🔥 连续学习 ${dailyStats.dayStreak} 天 · 今日已学 ${dailyStats.count} 词`;
+  } else if (dailyStats.count > 0) {
+    el.classList.remove('hide');
+    el.textContent = `今日已学 ${dailyStats.count} 词`;
+  } else {
+    el.classList.add('hide');
+  }
+}
+
+// ── TTS ───────────────────────────────────────────────────────────────────
+// ── Pin / always-on-top toggle ──────────────────────────────────────────
+function togglePin() {
+  pinned = !pinned;
+  const btn = document.getElementById('pin-btn');
+  btn.classList.toggle('on', pinned);
+  btn.title = pinned ? '取消置顶' : '置顶';
+  btn.textContent = pinned ? '⊕' : '⊖';
+  if (ipc) ipc.send('win-topmost', pinned);
+}
+
+function speakCurrent() { const _v = deck && deck[idx]; if (_v) speak(_v.w); }
+function speak(word) {
+  try {
+    if (!window.speechSynthesis) return;
+    if (isSilent) return;
+    const w = word || (deck[idx] && deck[idx].w);
+    if (!w) return;
+    window.speechSynthesis.cancel();
+    const btn = document.getElementById('speak-btn');
+    if (btn) { btn.textContent = '…'; btn.style.color = '#7eb89a'; }
+    const u = new SpeechSynthesisUtterance(w);
+    u.onend = () => { if (btn) { btn.textContent = '♪'; btn.style.color = ''; } };
+    u.onerror = () => { if (btn) { btn.textContent = '♪'; btn.style.color = ''; } };
+    u.lang = 'en-US'; u.rate = 0.85;
+    window.speechSynthesis.speak(u);
+  } catch(e) {}
+}
+
+
+
+function miniToggleReveal() {
+  if (!isMini) return;
+  if (!revealed) revealAnswer();
+  else { idx++; renderCard(); }
+}
+function reviewFavQuick() {
+  const words = ALL.filter(v => favs.has(v.w));
+  if (!words.length) { return; }
+  isReview = true; buildDeck(words); renderCard();
+}
+
+// ── Theme ─────────────────────────────────────────────────────────────────
+function toggleThemePanel() {
+  document.getElementById('theme-panel').classList.toggle('on');
+}
+function setTheme(cls) {
+  const themes = ['theme-blue','theme-purple','theme-amber','theme-rose','theme-light'];
+  // Apply to both html and widget so CSS vars cascade correctly
+  const root = document.documentElement;
+  const w = document.getElementById('widget');
+  themes.forEach(c => { root.classList.remove(c); w.classList.remove(c); });
+  if (cls) { root.classList.add(cls); w.classList.add(cls); }
+  document.querySelectorAll('.theme-opt').forEach(o => {
+    o.classList.toggle('active', o.dataset.theme === cls);
+  });
+  document.getElementById('theme-panel').classList.remove('on');
+  try { localStorage.setItem('ielts_theme', cls); } catch(e) {}
+  setTimeout(autoResize, 50);
+}
+// Load saved theme
+(function() {
+  try {
+    const t = localStorage.getItem('ielts_theme');
+    if (t) setTheme(t);
+  } catch(e) {}
+})();
+// ── More menu ─────────────────────────────────────────────────────────────
+function toggleMoreMenu() {
+  var m = document.getElementById('more-menu');
+  var btn = document.getElementById('more-btn');
+  if (!m || !btn) return;
+  if (m.style.display === 'block') {
+    m.style.display = 'none';
+  } else {
+    var r = btn.getBoundingClientRect();
+    m.style.left = (r.left + 8) + 'px';
+    m.style.top = (r.bottom + 4) + 'px';
+    m.style.display = 'block';
+  }
+}
+// Close more menu on outside click
+document.addEventListener('click', function(e) {
+  var m = document.getElementById('more-menu');
+  if (!m) return;
+  if (!e.target.closest('#more-menu') && !e.target.closest('#more-btn')) {
+    m.style.display = 'none';
+  }
+});
+// Close theme panel on outside click
+document.addEventListener('click', e => {
+  const panel = document.getElementById('theme-panel');
+  const btn = document.getElementById('theme-btn');
+  if (panel && panel.classList.contains('on') && !panel.contains(e.target) && e.target !== btn) {
+    panel.classList.remove('on');
+  }
+});
+
+
+// ── Custom Keybindings ────────────────────────────────────────────────────
+const KB_KEY = 'ielts_keybindings';
+const KB_DEFAULTS = {
+  reveal:  [' ','Enter'],
+  known:   ['ArrowRight','l'],
+  unknown: ['ArrowLeft','h'],
+  skip:    ['ArrowDown','s'],
+  prev:    ['Backspace','z'],
+  fav:     ['f'],
+  speak:   ['p'],
+  mini:    ['m'],
+};
+let KB = {};
+function loadKeybindings() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KB_KEY) || '{}');
+    Object.keys(KB_DEFAULTS).forEach(k => {
+      KB[k] = (saved[k] || KB_DEFAULTS[k]).map(x => x.toLowerCase());
+    });
+  } catch(e) {
+    Object.keys(KB_DEFAULTS).forEach(k => { KB[k] = KB_DEFAULTS[k].map(x => x.toLowerCase()); });
+  }
+}
+function matchKey(e, action) {
+  const k = e.key === ' ' ? ' ' : e.key.toLowerCase();
+  return KB[action] && KB[action].includes(k);
+}
+loadKeybindings();
+// Reload keybindings when window regains focus (user may have changed settings)
+window.addEventListener('focus', () => { try { loadKeybindings(); } catch(e) {} });
+function openKeybindings() {
+  if (ipc) ipc.send('open-tool-keybindings');
+  else window.open('keybindings.html');
+}
+
+// ── Keyboard shortcuts ────────────────────────────────────────────────────
+// Space / Enter  = reveal answer (or next card if already revealed)
+// ArrowRight / K = mark known
+// ArrowLeft  / J = mark unknown
+// F              = toggle fav
+// Escape         = close list panel
+document.addEventListener('keydown', e => {
+  // ── 列表面板打开时 ────────────────────────────────────────────
+  if (document.getElementById('list-overlay').classList.contains('on')) {
+    if ((e.key==='h'||e.key==='H') && e.ctrlKey && e.shiftKey) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
+    if (e.key === 'Escape') {
+      // Close detail modal first if open
+      const dw = document.getElementById('word-detail');
+      if (dw && dw.classList.contains('on')) { closeDetail(); e.preventDefault(); return; }
+      const si = document.getElementById('list-search-input');
+      if (si && si.value) { si.value = ''; renderList(); si.blur(); }
+      else { closeList(); }
+      e.preventDefault();
+    }
+    return;
+  }
+  if ((e.key==='h'||e.key==='H') && e.ctrlKey && e.shiftKey) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
+  // ── 完成页 ────────────────────────────────────────────────────
+  if (document.getElementById('finish-view').classList.contains('on')) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); restartAll(); }
+    return;
+  }
+  // ── 学习页 ────────────────────────────────────────────────────
+  // 不拦截输入框
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'F1')                  { e.preventDefault(); revealAnswer(); }
+  else if (e.key === 'F2')           { if (revealed) { e.preventDefault(); mark(true); } }
+  else if (e.key === 'F3')           { if (revealed) { e.preventDefault(); mark(false); } }
+  else if (matchKey(e,'reveal'))     { e.preventDefault(); revealAnswer(); }
+  else if (matchKey(e,'known'))      { if (revealed) { e.preventDefault(); mark(true); } }
+  else if (matchKey(e,'unknown'))    { if (revealed) { e.preventDefault(); mark(false); } }
+  else if (matchKey(e,'skip'))    { e.preventDefault(); skipCard(); }
+  else if (matchKey(e,'prev'))    { e.preventDefault(); prevCard(); }
+  else if (matchKey(e,'fav'))     { e.preventDefault(); toggleFav({ stopPropagation: () => {} }); }
+  else if (matchKey(e,'speak'))   { e.preventDefault(); speakCurrent(); }
+  else if (matchKey(e,'mini'))    { e.preventDefault(); toggleMini(); }
+  else if (e.key === 'Escape')    { closeList(); }
+});
+</script>
+</body>
+</html>
