@@ -277,6 +277,7 @@ html,body{
 }
 .card-inner.flipped{ transform:rotateY(180deg); }
 .no-anim .card-inner{ transition:none !important; }
+.card-inner.no-transition{ transition:none !important; }
 .no-anim .answer{ transition:none !important; }
 .no-anim .card-fav,.no-anim .tbtn,.no-anim .btn{ transition:none !important; }
 
@@ -676,6 +677,7 @@ html,body{
       <input class="opacity-range-inline" id="opacity-range" type="range" min="20" max="100" value="100" oninput="setOpacity(this.value)" title="透明度">
       <button class="tbtn" id="speak-btn" onclick="speakCurrent()" title="朗读">&#9834;</button>
       <button class="tbtn" id="mute-btn" onclick="toggleSilent()" title="静音">&#128264;</button>
+      <button class="tbtn" id="anim-btn" onclick="toggleAnim()" title="关闭翻转动画">&#8635;</button>
       <button class="tbtn" id="theme-btn" onclick="toggleThemePanel()" title="主题">&#9680;</button>
       <button class="tbtn" onclick="openList('k')" title="单词列表">&#8801;</button>
       <button class="tbtn" onclick="prevCard()" title="上一个">&#8249;</button>
@@ -1137,6 +1139,17 @@ function renderCard() {
   document.getElementById('acts').style.display = 'none';
 
   if (!deck || idx >= deck.length) { showFinish(); return; }
+
+  // Reset card state: clear back content before flip animation to prevent leaking previous word
+  const inner = document.getElementById('card-inner');
+  const wb = document.getElementById('word-back');
+  const cb = document.getElementById('wcat-back');
+  if (inner) inner.classList.add('no-transition');
+  if (inner) inner.classList.remove('flipped');
+  revealed = false;
+  if (wb) wb.textContent = '';
+  if (cb) cb.textContent = '';
+  requestAnimationFrame(() => { if (inner) inner.classList.remove('no-transition'); });
 
   const v = deck[idx];
   const catEl = document.getElementById('wcat');
