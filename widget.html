@@ -201,7 +201,7 @@ html,body{
 .tbtn:hover{ background:rgba(var(--accent-rgb),0.12);color:var(--accent);border-color:rgba(var(--accent-rgb),0.3); }
 .tbtn.close:hover{ background:rgba(192,112,112,0.15);color:#c07070;border-color:rgba(192,112,112,0.35); }
 #mute-btn.on{ color:#c07070;border-color:rgba(192,112,112,0.4); }
-#anim-btn.on{ color:#7eb89a;border-color:rgba(126,184,154,0.4); }
+#anim-btn.on{ color:#7eb89a;border-color:rgba(126,184,154,0.5);background:rgba(126,184,154,0.1); }
 .more-menu{ position:fixed;background:var(--panel-bg);border:1px solid var(--border);border-radius:10px;padding:4px;z-index:200;min-width:130px;box-shadow:0 4px 16px rgba(0,0,0,0.3);display:none; }
 .more-item{ padding:7px 12px;font-size:11px;color:var(--text);cursor:pointer;border-radius:6px;white-space:nowrap;letter-spacing:.03em; }
 .more-item:hover{ background:rgba(var(--accent-rgb),0.1); }
@@ -1009,7 +1009,8 @@ function toggleAnim() {
   var b = document.getElementById('anim-btn');
   if (b) {
     b.classList.toggle('on', noAnim);
-    b.title = noAnim ? '翻转动画（关）- 点击开启' : '翻转动画（开）- 点击关闭';
+    b.innerHTML = noAnim ? '&#8634;' : '&#8635;';
+    b.title = noAnim ? '翻转动画已关闭 - 点击开启' : '翻转动画已开启 - 点击关闭';
   }
   document.getElementById('widget').classList.toggle('no-anim', noAnim);
   try { localStorage.setItem('ielts_noanim', noAnim ? '1' : '0'); } catch(_) {}
@@ -1018,7 +1019,7 @@ function toggleAnim() {
 (function(){
   try {
     if (localStorage.getItem('ielts_silent') === '1') { isSilent = true; var mb = document.getElementById('mute-btn'); if (mb) mb.classList.add('on'); mb.innerHTML='&#128263;'; }
-    if (localStorage.getItem('ielts_noanim') === '1') { noAnim = true; var ab = document.getElementById('anim-btn'); if (ab) ab.classList.add('on'); document.getElementById('widget').classList.add('no-anim'); }
+    if (localStorage.getItem('ielts_noanim') === '1') { noAnim = true; var ab = document.getElementById('anim-btn'); if (ab) { ab.classList.add('on'); ab.innerHTML = '&#8634;'; } document.getElementById('widget').classList.add('no-anim'); }
   } catch(_) {}
 })();
 
