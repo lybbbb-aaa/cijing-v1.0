@@ -110,9 +110,13 @@ h1{
 </div>
 <div style="font-size:9px;color:#888;margin:6px 0 16px;line-height:1.6">修改键位后点「保存并生效」，重新打开词境即可生效。<br>此文件位于 resources/app/keybindings.html，可直接双击打开。</div>
 
-<div class="section-title">学习操作</div>
+<div class="section-title">可自定义快捷键</div>
 
 <div id="key-bindings"></div>
+
+<div class="section-title">固定快捷键（不可修改）</div>
+<div style="font-size:10px;color:#888;margin-bottom:6px">这些键位为系统保留，不受自定义影响</div>
+<div id="fixed-keys"></div>
 <div class="conflict-warn" id="conflict-warn">⚠ 存在重复键位，请检查</div>
 <div class="hint">点击输入框后按任意键完成绑定 · 支持组合键（Ctrl/Shift/Alt）</div>
 
@@ -281,8 +285,27 @@ document.addEventListener('click', e => {
   }
 });
 
+function renderFixedKeys() {
+  var fixed = [
+    {key:'F1', label:'翻开/收起答案'},
+    {key:'F2', label:'认识 → 下一张'},
+    {key:'F3', label:'不认识 → 下一张'},
+    {key:'Ctrl+Shift+H', label:'老板键（隐藏/显示窗口）'},
+    {key:'Esc', label:'关闭列表 / 退出复习'}
+  ];
+  var el = document.getElementById('fixed-keys');
+  el.innerHTML = fixed.map(function(f) {
+    return '<div class="key-row" style="opacity:0.7">'+
+      '<div class="key-label">'+f.label+'</div>'+
+      '<div class="key-desc">固定</div>'+
+      '<input class="key-input" value="'+f.key+'" readonly style="background:#e8e6e0;cursor:default;color:#888">'+
+      '</div>';
+  }).join('');
+}
+
 loadBindings();
 renderBindings();
+renderFixedKeys();
 </script>
 </body>
 </html>
