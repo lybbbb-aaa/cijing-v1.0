@@ -1651,6 +1651,7 @@ const KB_DEFAULTS = {
   fav:     ['f'],
   speak:   ['p'],
   mini:    ['m'],
+  anim:    ['a'],
 };
 let KB = {};
 function loadKeybindings() {
@@ -1715,6 +1716,7 @@ document.addEventListener('keydown', e => {
   else if (matchKey(e,'prev'))    { e.preventDefault(); prevCard(); }
   else if (matchKey(e,'fav'))     { e.preventDefault(); toggleFav({ stopPropagation: () => {} }); }
   else if (matchKey(e,'speak'))   { e.preventDefault(); speakCurrent(); }
+  else if (matchKey(e,'anim'))    { e.preventDefault(); toggleAnim(); }
   else if (matchKey(e,'mini'))    { e.preventDefault(); toggleMini(); }
   else if (e.key === 'Escape')    { if (isReview) { exitReview(); } else { closeList(); } }
 });
