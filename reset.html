@@ -166,7 +166,8 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#7eb89a}
 const SAVE_KEY = 'ielts_state_v4';
 const _fs2   = (typeof require !== 'undefined') ? require('fs')   : null;
 const _path3 = (typeof require !== 'undefined') ? require('path') : null;
-const _pfile = (_fs2 && _path3) ? _path3.join(process.env.APPDATA || '', 'ielts-widget', 'progress.json') : null;
+const _appdata = process.env.APPDATA || (typeof process !== 'undefined' && process.env.USERPROFILE ? process.env.USERPROFILE + '\\AppData\\Roaming' : '');
+const _pfile = (_fs2 && _path3) ? _path3.join(_appdata, 'ielts-widget', 'progress.json') : null;
 if (_fs2 && _pfile) { try { _fs2.mkdirSync(_path3.dirname(_pfile), {recursive:true}); } catch(e) {} }
 function _rp() { if (!_fs2||!_pfile) return {}; try { return JSON.parse(_fs2.readFileSync(_pfile,'utf8')); } catch(e) { return {}; } }
 function _wp(o) { if (!_fs2||!_pfile) return; try { _fs2.writeFileSync(_pfile, JSON.stringify(o), 'utf8'); } catch(e) {} }
@@ -182,8 +183,8 @@ function loadStats() {
     document.getElementById('cnt-streak').textContent  = (d.streak  || 0) + ' 次';
     document.getElementById('cnt-today').textContent   = ((d.dailyStats || {}).count || 0) + ' 词';
     document.getElementById('storage-info').textContent = Object.keys(d).length
-      ? '✓ 已读取学习数据'
-      : '⚠ 暂无学习数据（可能尚未开始学习）';
+      ? '✓ 已读取学习数据 (' + _pfile + ')'
+      : '⚠ 无法读取数据 - 文件路径: ' + (_pfile || '(未知)') + ' | fs可用: ' + (!!_fs2);
   } catch(e) {
     document.getElementById('storage-info').textContent = '读取失败: ' + e.message;
   }
