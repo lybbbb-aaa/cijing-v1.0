@@ -141,6 +141,7 @@ const DEFAULTS = {
   speak:    { label:'朗读单词',       keys:['p'],                   desc:'朗读' },
   mini:     { label:'迷你模式切换',   keys:['m'],                   desc:'迷你' },
   anim:     { label:'开关翻转动画',    keys:['a'],                   desc:'动画' },
+  boss:     { label:'老板键（隐藏/显示）',keys:['ctrl+shift+h'],       desc:'隐藏' },
 };
 
 let bindings = {};
@@ -290,7 +291,6 @@ function renderFixedKeys() {
     {key:'F1', label:'翻开/收起答案'},
     {key:'F2', label:'认识 → 下一张'},
     {key:'F3', label:'不认识 → 下一张'},
-    {key:'Ctrl+Shift+H', label:'老板键（隐藏/显示窗口）'},
     {key:'Esc', label:'关闭列表 / 退出复习'}
   ];
   var el = document.getElementById('fixed-keys');

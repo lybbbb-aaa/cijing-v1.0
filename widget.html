@@ -1652,6 +1652,7 @@ const KB_DEFAULTS = {
   speak:   ['p'],
   mini:    ['m'],
   anim:    ['a'],
+  boss:    ['ctrl+shift+h'],
 };
 let KB = {};
 function loadKeybindings() {
@@ -1667,6 +1668,17 @@ function loadKeybindings() {
 function matchKey(e, action) {
   const k = e.key === ' ' ? ' ' : e.key.toLowerCase();
   return KB[action] && KB[action].includes(k);
+}
+function matchBossKey(e) {
+  if (!KB['boss']) return false;
+  return KB['boss'].some(function(bk) {
+    var parts = bk.toLowerCase().split('+');
+    var hasCtrl  = parts.includes('ctrl');
+    var hasShift = parts.includes('shift');
+    var hasAlt   = parts.includes('alt');
+    var keyPart  = parts.filter(function(p) { return !['ctrl','shift','alt'].includes(p); })[0];
+    return e.ctrlKey === hasCtrl && e.shiftKey === hasShift && e.altKey === hasAlt && e.key.toLowerCase() === keyPart;
+  });
 }
 loadKeybindings();
 // Reload keybindings when window regains focus (user may have changed settings)
@@ -1685,7 +1697,7 @@ function openKeybindings() {
 document.addEventListener('keydown', e => {
   // ── 列表面板打开时 ────────────────────────────────────────────
   if (document.getElementById('list-overlay').classList.contains('on')) {
-    if ((e.key==='h'||e.key==='H') && e.ctrlKey && e.shiftKey) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
+    if (matchBossKey(e)) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
     if (e.key === 'Escape') {
       // Close detail modal first if open
       const dw = document.getElementById('word-detail');
@@ -1697,7 +1709,7 @@ document.addEventListener('keydown', e => {
     }
     return;
   }
-  if ((e.key==='h'||e.key==='H') && e.ctrlKey && e.shiftKey) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
+  if (matchBossKey(e)) { e.preventDefault(); if(ipc) ipc.send('win-hide'); return; }
   // ── 完成页 ────────────────────────────────────────────────────
   if (document.getElementById('finish-view').classList.contains('on')) {
     if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); restartAll(); }
@@ -1718,6 +1730,7 @@ document.addEventListener('keydown', e => {
   else if (matchKey(e,'speak'))   { e.preventDefault(); speakCurrent(); }
   else if (matchKey(e,'anim'))    { e.preventDefault(); toggleAnim(); }
   else if (matchKey(e,'mini'))    { e.preventDefault(); toggleMini(); }
+  else if (matchKey(e,'boss'))    { e.preventDefault(); if(ipc) ipc.send('win-hide'); }
   else if (e.key === 'Escape')    { if (isReview) { exitReview(); } else { closeList(); } }
 });
 </script>
