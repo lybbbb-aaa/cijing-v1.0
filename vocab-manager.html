@@ -342,7 +342,7 @@ function addWord() {
     showToast('已添加「' + w + '」，重启词境生效');
     clearAddForm();
     switchTab('manage'); renderManage();
-    return;();
+    return;
   }
   saveCustom(data);
   _baseVocab = null; // invalidate cache
