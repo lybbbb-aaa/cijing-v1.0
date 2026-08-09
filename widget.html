@@ -504,6 +504,8 @@ html,body{
   padding:0;flex-shrink:0;
 }
 .filt-fav-btn:hover{ border-color:#c9a96e;color:#c9a96e;background:rgba(201,169,110,.1); }
+.filt-fav-btn.reviewing{ border-color:#c07070;color:#c07070;background:rgba(192,112,112,.12); }
+.filt-fav-btn.reviewing:hover{ border-color:#c07070;color:#c07070;background:rgba(192,112,112,.2); }
 .filt-fav-btn.has-favs{ color:var(--accent);border-color:rgba(var(--accent-rgb),0.4); }
 
 
@@ -726,10 +728,6 @@ html,body{
       <div class="theme-dot" style="background:linear-gradient(135deg,#2a5a40,#3a7a5a)"></div>
       <span class="theme-label">淡雅白</span>
     </div>
-  </div>
-  <div class="review-banner" id="review-banner" onclick="exitReview()">
-    📋 复习模式 · <span id="rb-label">不认识</span> · 点击此处或按 <b>Esc</b> 退出
-    <button class="rb-exit" onclick="event.stopPropagation();exitReview()">✕ 退出复习</button>
   </div>
   <div class="streak-banner hide" id="streak-banner"></div>
   <div style="position:relative">
@@ -1255,7 +1253,7 @@ function showFinish() {
   document.getElementById('finish-view').classList.add('on');
   document.getElementById('fin-title').textContent = isReview ? '🎯 复习完成！' : '🎉 本轮完成！';
   document.getElementById('fin-sub').textContent = isReview
-    ? '点击下方按钮继续复习或返回正常学习'
+    ? '点击返回正常学习'
     : '认识 ' + known.size + ' 个 · 还有 ' + unknown.size + ' 个需复习';
   document.getElementById('fk').textContent = known.size;
   document.getElementById('fu').textContent = unknown.size;
@@ -1263,11 +1261,9 @@ function showFinish() {
   var fbRev = document.getElementById('fb-rev');
   var fbFav = document.getElementById('fb-fav');
   if (isReview) {
-    // In review mode: show redo and exit buttons
     if (fbRev) { fbRev.style.display = ''; fbRev.textContent = '🔄 再练一次'; fbRev.onclick = function() { if (_reviewLabel === '收藏') reviewFav(); else reviewUnknown(); }; }
     if (fbFav) { fbFav.style.display = ''; fbFav.textContent = '🚪 返回正常学习'; fbFav.onclick = exitReview; }
   } else {
-    // Normal mode: show review unknown, review fav, restart
     if (fbRev) { fbRev.style.display = unknown.size > 0 ? '' : 'none'; fbRev.textContent = '复习不认识'; fbRev.onclick = reviewUnknown; }
     if (fbFav) { fbFav.style.display = favs.size > 0 ? '' : 'none'; fbFav.textContent = '复习收藏'; fbFav.onclick = reviewFav; }
   }
@@ -1275,18 +1271,20 @@ function showFinish() {
 }
 
 function reviewUnknown() {
+  if (isReview) { exitReview(); return; }
   const words = ALL.filter(v => unknown.has(v.w));
   if (!words.length) return;
   isReview = true; _reviewLabel = '不认识';
-  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  updateReviewBtn();
   buildDeck(words); renderCard();
 }
 
 function reviewFav() {
+  if (isReview) { exitReview(); return; }
   const words = ALL.filter(v => favs.has(v.w));
   if (!words.length) return;
   isReview = true; _reviewLabel = '收藏';
-  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  updateReviewBtn();
   buildDeck(words); renderCard();
 }
 
@@ -1558,15 +1556,29 @@ function miniToggleReveal() {
   else { idx++; renderCard(); }
 }
 function reviewFavQuick() {
+  if (isReview) { exitReview(); return; }
   const words = ALL.filter(v => favs.has(v.w));
   if (!words.length) { return; }
   isReview = true; _reviewLabel = '收藏';
-  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  updateReviewBtn();
   buildDeck(words); renderCard();
+}
+function updateReviewBtn() {
+  var b = document.getElementById('filt-fav-btn');
+  if (!b) return;
+  if (isReview) {
+    b.textContent = '退出复习';
+    b.classList.add('reviewing');
+    b.title = '点击退出复习模式';
+  } else {
+    b.textContent = '复习';
+    b.classList.remove('reviewing');
+    b.title = '复习收藏单词';
+  }
 }
 function exitReview() {
   isReview = false; _reviewLabel = '';
-  var rb = document.getElementById('review-banner'); if (rb) rb.classList.remove('show');
+  updateReviewBtn();
   buildDeck(getFilteredWords()); renderCard();
 }
 
