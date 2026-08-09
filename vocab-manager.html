@@ -445,7 +445,7 @@ function renderManage() {
     if (!q) {
       // Paginate: show first 50, with load-more
       items._total = items.length;
-      items = items.slice(0, 50);
+      items = items.slice(0, _loadMoreLimit);
     }
   }
 
@@ -579,7 +579,7 @@ function doExportClipboard() {
 
 // ── Batch management ──────────────────────────────────────────────────────
 var _loadedCount = 0;
-var _loadMoreLimit = 50;
+var _loadMoreLimit = 200;
 var _cachedItems = [];
 function loadMore() {
   _loadMoreLimit += 50;
