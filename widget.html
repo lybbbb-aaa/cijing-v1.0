@@ -366,6 +366,11 @@ html,body{
 .fi-icon{ font-size:36px;line-height:1; }
 .fi-title{ font-size:14px;font-weight:600;color:#e8e0d0;letter-spacing:.06em; }
 .fi-sub{ font-size:11px;color:#7a8a7e;line-height:1.6; }
+.review-banner{ display:none;padding:6px 12px;background:rgba(192,112,112,.12);border-bottom:1px solid rgba(192,112,112,.25);text-align:center;font-size:10px;color:#c07070;letter-spacing:.06em;cursor:pointer;transition:all .15s; }
+.review-banner.show{ display:block; }
+.review-banner:hover{ background:rgba(192,112,112,.18); }
+.review-banner .rb-exit{ margin-left:8px;padding:2px 8px;border-radius:4px;border:1px solid rgba(192,112,112,.4);background:transparent;color:#c07070;font-size:9px;cursor:pointer;font-family:inherit; }
+.review-banner .rb-exit:hover{ background:rgba(192,112,112,.2); }
 .fi-stats{ display:flex;gap:20px;background:rgba(255,255,255,.02);border:1px solid rgba(42,56,48,.7);border-radius:10px;padding:10px 18px; }
 .fis{ text-align:center; }
 .fis .n{ font-family:"EB Garamond",serif;font-size:22px;font-weight:500;line-height:1; }
@@ -722,6 +727,10 @@ html,body{
       <span class="theme-label">淡雅白</span>
     </div>
   </div>
+  <div class="review-banner" id="review-banner" onclick="exitReview()">
+    📋 复习模式 · <span id="rb-label">不认识</span> · 点击此处或按 <b>Esc</b> 退出
+    <button class="rb-exit" onclick="event.stopPropagation();exitReview()">✕ 退出复习</button>
+  </div>
   <div class="streak-banner hide" id="streak-banner"></div>
   <div style="position:relative">
   <div class="filter-bar" id="filter-bar">
@@ -1052,7 +1061,7 @@ let _resizeTimer = null;
 let pinned = true;
 let dimmed = false;
 let deck = [], known = new Set(), unknown = new Set(), favs = new Set();
-let idx = 0, revealed = false, streak = 0, isReview = false;
+let idx = 0, revealed = false, streak = 0, isReview = false, _reviewLabel = '';
 // Spaced repetition: words pending re-review [{w, due}]
 let srQueue = [];
 // Daily stats
@@ -1244,27 +1253,41 @@ function toggleFav(e) {
 function showFinish() {
   document.getElementById('study-view').style.display = 'none';
   document.getElementById('finish-view').classList.add('on');
-  document.getElementById('fin-title').textContent = isReview ? '复习完成！' : '本轮完成！';
-  document.getElementById('fin-sub').textContent =
-    `认识 ${known.size} 个 · 还有 ${unknown.size} 个需复习`;
+  document.getElementById('fin-title').textContent = isReview ? '🎯 复习完成！' : '🎉 本轮完成！';
+  document.getElementById('fin-sub').textContent = isReview
+    ? '点击下方按钮继续复习或返回正常学习'
+    : '认识 ' + known.size + ' 个 · 还有 ' + unknown.size + ' 个需复习';
   document.getElementById('fk').textContent = known.size;
   document.getElementById('fu').textContent = unknown.size;
   document.getElementById('ff').textContent = favs.size;
-  document.getElementById('fb-rev').style.display = unknown.size > 0 ? '' : 'none';
-  document.getElementById('fb-fav').style.display = favs.size > 0 ? '' : 'none';
+  var fbRev = document.getElementById('fb-rev');
+  var fbFav = document.getElementById('fb-fav');
+  if (isReview) {
+    // In review mode: show redo and exit buttons
+    if (fbRev) { fbRev.style.display = ''; fbRev.textContent = '🔄 再练一次'; fbRev.onclick = function() { if (_reviewLabel === '收藏') reviewFav(); else reviewUnknown(); }; }
+    if (fbFav) { fbFav.style.display = ''; fbFav.textContent = '🚪 返回正常学习'; fbFav.onclick = exitReview; }
+  } else {
+    // Normal mode: show review unknown, review fav, restart
+    if (fbRev) { fbRev.style.display = unknown.size > 0 ? '' : 'none'; fbRev.textContent = '复习不认识'; fbRev.onclick = reviewUnknown; }
+    if (fbFav) { fbFav.style.display = favs.size > 0 ? '' : 'none'; fbFav.textContent = '复习收藏'; fbFav.onclick = reviewFav; }
+  }
   autoResize();
 }
 
 function reviewUnknown() {
   const words = ALL.filter(v => unknown.has(v.w));
   if (!words.length) return;
-  isReview = true; buildDeck(words); renderCard();
+  isReview = true; _reviewLabel = '不认识';
+  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  buildDeck(words); renderCard();
 }
 
 function reviewFav() {
   const words = ALL.filter(v => favs.has(v.w));
   if (!words.length) return;
-  isReview = true; buildDeck(words); renderCard();
+  isReview = true; _reviewLabel = '收藏';
+  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  buildDeck(words); renderCard();
 }
 
 function restartAll() {
@@ -1537,7 +1560,14 @@ function miniToggleReveal() {
 function reviewFavQuick() {
   const words = ALL.filter(v => favs.has(v.w));
   if (!words.length) { return; }
-  isReview = true; buildDeck(words); renderCard();
+  isReview = true; _reviewLabel = '收藏';
+  var rb = document.getElementById('review-banner'); if (rb) { rb.classList.add('show'); document.getElementById('rb-label').textContent = _reviewLabel; }
+  buildDeck(words); renderCard();
+}
+function exitReview() {
+  isReview = false; _reviewLabel = '';
+  var rb = document.getElementById('review-banner'); if (rb) rb.classList.remove('show');
+  buildDeck(getFilteredWords()); renderCard();
 }
 
 // ── Theme ─────────────────────────────────────────────────────────────────
@@ -1673,7 +1703,7 @@ document.addEventListener('keydown', e => {
   else if (matchKey(e,'fav'))     { e.preventDefault(); toggleFav({ stopPropagation: () => {} }); }
   else if (matchKey(e,'speak'))   { e.preventDefault(); speakCurrent(); }
   else if (matchKey(e,'mini'))    { e.preventDefault(); toggleMini(); }
-  else if (e.key === 'Escape')    { closeList(); }
+  else if (e.key === 'Escape')    { if (isReview) { exitReview(); } else { closeList(); } }
 });
 </script>
 </body>
