@@ -677,7 +677,7 @@ html,body{
       <input class="opacity-range-inline" id="opacity-range" type="range" min="20" max="100" value="100" oninput="setOpacity(this.value)" title="透明度">
       <button class="tbtn" id="speak-btn" onclick="speakCurrent()" title="朗读">&#9834;</button>
       <button class="tbtn" id="mute-btn" onclick="toggleSilent()" title="静音">&#128264;</button>
-      <button class="tbtn" id="anim-btn" onclick="toggleAnim()" title="关闭翻转动画">&#8635;</button>
+      <button class="tbtn" id="anim-btn" onclick="toggleAnim()" title="翻转动画（开）">&#8635;</button>
       <button class="tbtn" id="theme-btn" onclick="toggleThemePanel()" title="主题">&#9680;</button>
       <button class="tbtn" onclick="openList('k')" title="单词列表">&#8801;</button>
       <button class="tbtn" onclick="prevCard()" title="上一个">&#8249;</button>
@@ -1000,7 +1000,10 @@ function toggleSilent() {
 function toggleAnim() {
   noAnim = !noAnim;
   var b = document.getElementById('anim-btn');
-  if (b) b.classList.toggle('on', noAnim);
+  if (b) {
+    b.classList.toggle('on', noAnim);
+    b.title = noAnim ? '翻转动画（关）- 点击开启' : '翻转动画（开）- 点击关闭';
+  }
   document.getElementById('widget').classList.toggle('no-anim', noAnim);
   try { localStorage.setItem('ielts_noanim', noAnim ? '1' : '0'); } catch(_) {}
 }
