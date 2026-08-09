@@ -102,7 +102,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
 </head>
 <body>
 <h1>词库管理 <span id="vocab-status" style="font-size:10px;color:#888;font-weight:400;letter-spacing:0"></span></h1>
-<p class="subtitle">添加自定义单词 · 导入批量词汇 · 全库搜索与编辑</p>
+<p class="subtitle" style="line-height:1.8">💡 使用指南：<b>「＋ 添加」</b>新增自定义单词 → <b>「☰ 管理」</b>浏览/编辑/删除 → <b>「↑ 导入」</b>批量添加 → <b>「🔍 搜索」</b>查找词汇 → <b>「↓ 导出」</b>备份词库</p>
 
 <div class="tabs">
   <button class="tab active" data-tab="add" onclick="switchTab('add')">＋ 添加</button>
@@ -114,20 +114,21 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
 
 <!-- ADD -->
 <div class="panel active" id="panel-add">
+  <p style="font-size:10px;color:#888;margin-bottom:12px;line-height:1.6">填写英文单词和中文释义（必填），其他选填。添加后在 <b>「☰ 管理」</b> 中可编辑或删除。</p>
   <div class="row2">
-    <div class="field-group"><label>英文单词 *</label><input type="text" id="add-word" placeholder="e.g. persevere" autocomplete="off" spellcheck="false"/></div>
-    <div class="field-group"><label>词性</label><input type="text" id="add-pos" placeholder="v. / n. / adj." autocomplete="off"/></div>
+    <div class="field-group"><label>英文单词 <span style="color:#c04040">*必填</span></label><input type="text" id="add-word" placeholder="e.g. persevere" autocomplete="off" spellcheck="false"/></div>
+    <div class="field-group"><label>词性（选填）</label><input type="text" id="add-pos" placeholder="v. / n. / adj." autocomplete="off"/></div>
   </div>
-  <div class="field-group"><label>中文释义 *</label><input type="text" id="add-cn" placeholder="e.g. 坚持；不屈不挠" autocomplete="off"/></div>
+  <div class="field-group"><label>中文释义 <span style="color:#c04040">*必填</span></label><input type="text" id="add-cn" placeholder="e.g. 坚持；不屈不挠" autocomplete="off"/></div>
   <div class="row2">
     <div class="field-group"><label>分级</label>
       <select id="add-level"><option value="c">核心词汇</option><option value="h" selected>高频词汇</option><option value="b">基础词汇</option><option value="a">进阶词汇</option></select></div>
-    <div class="field-group"><label>音标</label><input type="text" id="add-ph" placeholder="e.g. /pəˈsɪvɪə/" autocomplete="off"/></div>
+    <div class="field-group"><label>音标（选填）</label><input type="text" id="add-ph" placeholder="e.g. /pəˈsɪvɪə/" autocomplete="off"/></div>
   </div>
-  <div class="field-group"><label>英文释义</label><input type="text" id="add-en" placeholder="e.g. to continue doing sth despite difficulty" autocomplete="off"/></div>
-  <div class="field-group"><label>例句</label><textarea id="add-ex" placeholder="e.g. She persevered with her studies."></textarea></div>
+  <div class="field-group"><label>英文释义（选填）</label><input type="text" id="add-en" placeholder="e.g. to continue doing sth despite difficulty" autocomplete="off"/></div>
+  <div class="field-group"><label>例句（选填）</label><textarea id="add-ex" placeholder="e.g. She persevered with her studies."></textarea></div>
   <div style="display:flex;gap:8px;margin-top:4px;">
-    <button class="btn btn-primary" onclick="addWord()">添加单词</button>
+    <button class="btn btn-primary" onclick="addWord()">✅ 添加单词</button>
     <button class="btn btn-secondary" onclick="clearAddForm()">清空</button>
   </div>
   <div id="edit-mode-banner" style="display:none;margin-top:10px;padding:8px 12px;background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.3);border-radius:6px;font-size:11px;color:#a07820;">
@@ -138,7 +139,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
 
 <!-- IMPORT -->
 <div class="panel" id="panel-import">
-  <p class="import-hint">每行一个词，格式：<br><code>word,中文释义,h</code> (分级可选 c/h/b/a)</p>
+  <p class="import-hint" style="line-height:1.8">📋 <b>批量导入格式</b>（每行一个词）：<br><code>英文单词,中文释义,分级</code><br>分级可选：<code>c</code>核心 / <code>h</code>高频 / <code>b</code>基础 / <code>a</code>进阶（不填默认高频）</p>
   <div class="import-area"><textarea id="import-text" placeholder="persevere,坚持；不屈不挠,h&#10;eloquent,口才好的,h&#10;ambiguous,模糊的；有歧义的,b" oninput="previewImport()"></textarea></div>
   <div id="import-preview" class="import-preview" style="display:none"></div>
   <div style="display:flex;gap:8px;margin-top:12px;">
@@ -167,6 +168,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
 
 <!-- MANAGE -->
 <div class="panel" id="panel-manage">
+  <p style="font-size:10px;color:#888;margin-bottom:8px;line-height:1.6">💡 每行右侧有 <b style="color:#c04040">「删除」</b>按钮可屏蔽词汇；自定义词可 <b style="color:#1a6640">「编辑」</b>；点击单词可查看详情。勾选多行后可批量操作。</p>
   <div class="stats-bar">
     词库总计 <span id="total-count">-</span> 词 ·
     自定义 <span id="custom-count">-</span> 词 ·
