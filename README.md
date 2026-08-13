@@ -71,4 +71,14 @@ npx electron .
 
 ---
 
-**Made with ❤️ by [lybbbb-aaa](https://github.com/lybbbb-aaa)**
+---
+
+## 💰 支持作者
+
+如果这个工具对你有帮助，欢迎在爱发电支持我：
+
+[![爱发电](https://img.shields.io/badge/爱发电-词境打包版¥19.9-946ce6?style=for-the-badge)](https://afdian.com/item/b34cadfe926911f1962c52540025c377)
+
+> 购买免安装打包版，解压即用，支持开发者继续维护更新。
+
+**Made with ❤️ by [lybbbb-aaa](https://github.com/lybbbb-aaa) · [爱发电主页](https://afdian.com/item/b34cadfe926911f1962c52540025c377)**
