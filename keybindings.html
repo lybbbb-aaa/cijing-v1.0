@@ -118,7 +118,7 @@ h1{
 <div style="font-size:10px;color:#888;margin-bottom:6px">这些键位为系统保留，不受自定义影响</div>
 <div id="fixed-keys"></div>
 <div class="conflict-warn" id="conflict-warn">⚠ 存在重复键位，请检查</div>
-<div class="hint">点击输入框后按任意键完成绑定 · 支持组合键（Ctrl/Shift/Alt）</div>
+<div class="hint">点击输入框后按任意键完成绑定 · 支持组合键（Ctrl/Shift/Alt）<br>老板键必须包含 Ctrl 或 Alt，否则会占用普通按键</div>
 
 <div class="actions">
   <button class="btn btn-reset-all" onclick="resetAll()">恢复默认</button>
@@ -246,13 +246,25 @@ function checkConflicts() {
   return !conflict;
 }
 
+function bossKeyHasModifier(k) {
+  const p = String(k || '').toLowerCase().split('+');
+  return p.includes('ctrl') || p.includes('control') || p.includes('alt');
+}
+
 function saveKeys() {
   if (!checkConflicts()) {
     showToast('存在重复键位，请先修复');
     return;
   }
+  const bk = (bindings.boss && bindings.boss[0]) || '';
+  if (!bossKeyHasModifier(bk)) {
+    showToast('老板键必须包含 Ctrl 或 Alt');
+    return;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bindings));
+    // Live-update the OS-level shortcut when the widget runs in this process
+    try { require('electron').ipcRenderer.send('set-boss-key', bk); } catch(e) {}
     showToast('✓ 已保存，重启应用后生效');
   } catch(e) {
     showToast('保存失败');

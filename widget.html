@@ -1680,9 +1680,39 @@ function matchBossKey(e) {
     return e.ctrlKey === hasCtrl && e.shiftKey === hasShift && e.altKey === hasAlt && e.key.toLowerCase() === keyPart;
   });
 }
+// Keep the OS-level global shortcut in sync with the user's custom boss key
+function syncBossKey() {
+  if (!ipc || !KB['boss'] || !KB['boss'][0]) return;
+  try { ipc.send('set-boss-key', KB['boss'][0]); } catch(e) {}
+}
+function showTip(msg) {
+  var el = document.getElementById('kb-tip');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'kb-tip';
+    el.style.cssText = 'position:fixed;left:50%;bottom:10px;transform:translateX(-50%);' +
+      'max-width:272px;text-align:center;line-height:1.5;background:rgba(150,80,80,.94);' +
+      'color:#fff;font-size:10px;padding:5px 12px;border-radius:12px;z-index:99999;' +
+      'pointer-events:none;opacity:0;transition:opacity .25s';
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(el._t);
+  el._t = setTimeout(function(){ el.style.opacity = '0'; }, 3800);
+}
+if (ipc && ipc.on) {
+  ipc.on('bosskey-status', function(_, d) {
+    if (!d || d.ok) return;
+    var a = d.accel || '';
+    if (d.reason === 'nomod') showTip('老板键必须含 Ctrl 或 Alt，已回退为 ' + a);
+    else showTip('老板键 ' + a + ' 被占用，请到「改键位」换一个');
+  });
+}
 loadKeybindings();
+syncBossKey();
 // Reload keybindings when window regains focus (user may have changed settings)
-window.addEventListener('focus', () => { try { loadKeybindings(); } catch(e) {} });
+window.addEventListener('focus', () => { try { loadKeybindings(); syncBossKey(); } catch(e) {} });
 function openKeybindings() {
   if (ipc) ipc.send('open-tool-keybindings');
   else window.open('keybindings.html');
