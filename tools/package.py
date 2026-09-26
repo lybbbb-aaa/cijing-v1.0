@@ -178,6 +178,14 @@ def main():
         if os.path.exists(src):
             shutil.copy2(src, os.path.join(out, dst_name))
 
+    # 截图（README 里引用了，随包放一份免得链接失效）
+    shot_src = os.path.join(ROOT, 'screenshots')
+    if os.path.isdir(shot_src):
+        shot_dst = os.path.join(out, 'screenshots')
+        if os.path.isdir(shot_dst):
+            shutil.rmtree(shot_dst)
+        shutil.copytree(shot_src, shot_dst)
+
     # 快捷方式：不预先打包 .lnk（里面是绝对路径，换机器就失效），
     # 改为随包放一个在本机生成桌面快捷方式的脚本
     write_shortcut_creator(out)
