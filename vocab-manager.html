@@ -137,7 +137,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
   </div>
   <div style="margin-top:18px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
     <span style="font-size:10px;color:#888">当前版本 <b id="app-version">-</b> · 收录快捷键 <b>Ctrl+Shift+D</b></span>
-    <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">🔄 检查更新</button>
+    <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">查看发布页</button>
     <button class="btn btn-sm btn-secondary" onclick="openDataDir()">📁 数据目录</button>
     <button class="btn btn-sm btn-secondary" onclick="openErrorLog()">🧾 错误日志</button>
     <button class="btn btn-sm btn-secondary" onclick="showAbout()">关于</button>
@@ -286,7 +286,7 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
       <button class="btn btn-sm btn-secondary" onclick="openDoc('CHANGELOG.md')">更新日志</button>
       <button class="btn btn-sm btn-secondary" onclick="openDoc('LICENSE')">许可协议</button>
       <button class="btn btn-sm btn-secondary" onclick="openDoc('使用条款与售后说明.md')">使用条款/退款</button>
-      <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">检查更新</button>
+      <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">查看发布页</button>
     </div>
   </div>
 </div>
@@ -801,7 +801,7 @@ function appVersion() { try { return (CJ && CJ.version) || '-'; } catch(e) { ret
 function checkUpdate() {
   var ipc = _ipcRenderer();
   if (ipc) ipc.send('open-external', 'https://github.com/lybbbb-aaa/cijing-v1.0/releases');
-  showToast('已打开下载页，可对比最新版本（当前 v' + appVersion() + '）');
+  showToast('已打开发布页（当前 v' + appVersion() + '）');
 }
 function openDoc(name) { var ipc = _ipcRenderer(); if (ipc) ipc.send('open-doc', name); }
 function showAbout() {
