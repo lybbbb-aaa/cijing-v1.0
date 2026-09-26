@@ -15,6 +15,18 @@
 
 > **为什么付费版？** Electron 打包复杂（300MB+），我帮你配好了。一杯奶茶钱，省你折腾时间。源码也给你看，放心。
 
+---
+
+## ⚠️ 第一次打开被 Windows 拦了？
+
+词境**没有买代码签名证书**，所以 Windows SmartScreen 可能提示「未知发布者」或「Windows 已保护你的电脑」。
+
+1. 点 **「更多信息」→「仍要运行」** 即可。
+2. 不是病毒：程序**完全离线**运行，不联网、不上传任何数据（你可以在断网状态下验证，除了朗读用的是系统语音）。
+3. 不放心可以先自己验一遍：把整个文件夹拖进 [VirusTotal](https://www.virustotal.com) 扫一遍；或右键 `electron.exe` → 属性 → 数字签名，会看到「未签名」。
+
+完整条款见 [使用条款与售后说明](使用条款与售后说明.md)（含 7 天无条件退款）。
+
 ## ✨ 功能
 
 - 📚 **8079 词** 核心/高频/基础/进阶四级分类
@@ -82,16 +94,22 @@ npm run release   # 打包免安装版到 release/
 > `devDependencies` 里锁定了 `electron@22.3.27`（与随包运行时的版本一致）。
 > 如果你不想重新下载 Electron，可以不动 `node_modules`。
 
-## ⚖️ 许可
+## ⚖️ 许可与条款
 
 - 代码、文档、图标：MIT（见 [LICENSE](LICENSE)）
+- **安装包使用条款 / 售后与退款**：[使用条款与售后说明](使用条款与售后说明.md)
+- 更新记录：[CHANGELOG.md](CHANGELOG.md)
 - `data/vocab_enriched.json` 的音标/释义/例句抓取自 dictionaryapi.dev，数据源自 Wiktionary（CC BY-SA 3.0），详见 [data/README.md](data/README.md)
 
 源码即本仓库的所有 HTML/JS 文件，MIT 协议，随便改。
 
 ## 📸 截图
 
-*截图见爱发电商品页（本仓库不存放演示图）。*
+| 卡片正面 | 卡片背面（含音标/释义/例句） | 单词列表 |
+|---|---|---|
+| ![front](screenshots/02-dark-front.png) | ![back](screenshots/03-dark-back.png) | ![list](screenshots/05-dark-list.png) |
+
+浅色主题：![light](screenshots/04-light-back.png) · 首次启动引导：![guide](screenshots/01-dark-guide.png)
 
 ---
 

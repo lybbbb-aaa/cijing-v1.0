@@ -422,7 +422,7 @@ ipcMain.on('notify-data-changed', (_, what) => {
 })
 
 // 打开包内文档（白名单）
-const DOC_ALLOW = ['CHANGELOG.md', 'README.md', 'LICENSE']
+const DOC_ALLOW = ['CHANGELOG.md', 'README.md', 'LICENSE', '使用条款与售后说明.md']
 ipcMain.on('open-doc', (_, name) => {
   try {
     const n = String(name || '')

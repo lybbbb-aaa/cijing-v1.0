@@ -44,6 +44,7 @@ EXTRA_FROM_OLD = ['start.bat', 'keybindings.bat', 'manage-vocab.bat', 'reset.bat
 DOC_MAP = [
     ('README.md', 'README.md'),
     ('CHANGELOG.md', 'CHANGELOG.md'),
+    ('使用条款与售后说明.md', '使用条款与售后说明.md'),
     ('使用说明书.html', 'guide.html'),
     ('使用说明书.md', 'guide.md'),
     ('快捷键说明书.md', 'shortcuts.md'),
