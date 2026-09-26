@@ -1,17 +1,23 @@
+# 依赖 / 构建产物
 node_modules/
 ielts-vocab-dist/
-_dev/
+release/
 test_pkg/
-*.py
-!sync.py
+__pycache__/
+*.pyc
+
+# 一次性脚本归档（本地保留，不参与构建）
+_dev/
+
+# 日志与系统文件
+*.log
 debug.log
-*.txt
 Thumbs.db
 .DS_Store
+*.txt
+
+# 本地辅助脚本 / 快捷方式（不进仓库）
 启动桌面助手.bat
 安装依赖.bat
 清空记忆.vbs
 改键位.vbs
-ph_part*.json
-words_part*.json
-vocab_enriched.json

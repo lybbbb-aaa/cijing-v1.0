@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8"/>
+<title>词境</title>
+<link href="fonts/eb-garamond.css" rel="stylesheet"/>
+<style><!--CSS1--></style>
+<style><!--CSS2--></style>
+</head>
+<body>
+<div class="widget" id="widget">
+  <div class="topbar" id="topbar">
+    <div class="topbar-left">
+      <button class="tbtn pin on" id="pin-btn" onclick="togglePin()" title="置顶" aria-label="窗口置顶开关">&#8853;</button>
+    </div>
+    <div class="topbar-right">
+      <input class="opacity-range-inline" id="opacity-range" type="range" min="20" max="100" value="100" oninput="setOpacity(this.value)" title="透明度" aria-label="窗口透明度">
+      <button class="tbtn" id="speak-btn" onclick="speakCurrent()" title="朗读" aria-label="朗读当前单词">&#9834;</button>
+      <button class="tbtn" id="mute-btn" onclick="toggleSilent()" title="静音" aria-label="静音开关">&#128264;</button>
+      <button class="tbtn" id="anim-btn" onclick="toggleAnim()" title="翻转动画（开）" aria-label="翻转动画开关">&#8635;</button>
+      <button class="tbtn" id="theme-btn" onclick="toggleThemePanel()" title="主题" aria-label="主题选择">&#9680;</button>
+      <button class="tbtn" onclick="openList('k')" title="单词列表" aria-label="打开单词列表">&#8801;</button>
+      <button class="tbtn" onclick="prevCard()" title="上一个 (Backspace / Z)" aria-label="上一张单词">&#8249;</button>
+      <button class="tbtn" onclick="skipCard()" title="跳过" aria-label="跳过此单词">&#8250;</button>
+      <button class="tbtn close" onclick="quitApp()" title="退出" aria-label="退出词境">&times;</button>
+    </div>
+  </div>
+
+  <!-- Filter bar -->
+  <!-- Mini mode bar -->
+  <div class="mini-bar" id="mini-bar">
+    <div class="mini-word" id="mini-word" onclick="miniToggleReveal()" title="点击翻面">—</div>
+    <div class="mini-cn" id="mini-cn"></div>
+    <div class="mini-prog" id="mini-prog"></div>
+    <button class="mini-toggle" onclick="toggleMini()" title="展开">⊞</button>
+  </div>
+  <!-- Daily streak banner -->
+  <div class="theme-panel" id="theme-panel">
+    <div class="theme-panel-title">主题配色</div>
+    <div class="theme-opt active" data-theme="" onclick="setTheme('')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#4a7a62,#7eb89a)"></div>
+      <span class="theme-label">森林绿</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-blue" onclick="setTheme('theme-blue')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#3a5a82,#7ab0d8)"></div>
+      <span class="theme-label">深海蓝</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-purple" onclick="setTheme('theme-purple')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#5a3a82,#a87ad8)"></div>
+      <span class="theme-label">暮光紫</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-amber" onclick="setTheme('theme-amber')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#7a5a20,#d4a84b)"></div>
+      <span class="theme-label">琥珀金</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-rose" onclick="setTheme('theme-rose')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#823a48,#d87a8a)"></div>
+      <span class="theme-label">玫瑰红</span>
+    </div>
+    <div class="theme-opt" data-theme="theme-light" onclick="setTheme('theme-light')">
+      <div class="theme-dot" style="background:linear-gradient(135deg,#2a5a40,#3a7a5a)"></div>
+      <span class="theme-label">淡雅白</span>
+    </div>
+  </div>
+  <div class="streak-banner hide" id="streak-banner"></div>
+  <div style="position:relative">
+  <div class="filter-bar" id="filter-bar">
+    <button class="filt-btn" data-f="c" onclick="setFilter('c')" style="--fc:#c9a96e" title="仅核心词 (~380词)">核心</button>
+    <button class="filt-btn" data-f="h" onclick="setFilter('h')" style="--fc:#7eb89a" title="核心+高频 (~4500词)">高频</button>
+    <button class="filt-btn" data-f="b" onclick="setFilter('b')" style="--fc:#7aabcc" title="核心+高频+基础 (~7200词)">基础</button>
+    <button class="filt-btn active" data-f="all" onclick="setFilter('all')" style="--fc:#c07070" title="全部8079词">所有</button>
+    <button class="filt-btn" data-f="x" onclick="setFilter('x')" style="--fc:#d480c0" title="自己添加的词">自定义</button>
+    <span class="filter-count" id="filter-count">8079 词</span>
+    <button class="filt-fav-btn" id="filt-fav-btn" onclick="reviewFavQuick()" title="复习收藏单词">复习</button>
+  </div>
+  </div>
+
+  <!-- Study view -->
+  <div id="study-view">
+    <div class="body" id="body-click" onclick="revealAnswer()">
+      <div class="card-inner" id="card-inner">
+        <!-- Front: word -->
+        <div class="card-front">
+          <div class="cat-tag" id="wcat">Academic</div>
+          <button class="card-fav" id="card-fav" onclick="toggleFav(event)" title="收藏">☆</button>
+          <div class="word-line">
+            <div class="word" id="word">—</div>
+            <div class="pos" id="pos"></div>
+          </div>
+          <div class="ph" id="ph"></div>
+          <div class="tap-hint" id="hint">— 点击显示释义 —</div>
+        </div>
+        <!-- Back: answer -->
+        <div class="card-back">
+          <div class="cat-tag" id="wcat-back" style="opacity:.6"></div>
+          <div class="word" id="word-back" style="font-size:20px;margin-bottom:8px"></div>
+          <div class="answer" id="answer" style="max-height:none;overflow:visible;opacity:1">
+            <div class="def-cn" id="def-cn"></div>
+            <div class="def-en" id="def-en"></div>
+            <div class="example" id="ex-box">
+              <div class="ex-en" id="ex-en"></div>
+              <div class="ex-cn" id="ex-cn"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+      <div class="prog-info">
+        <span id="pt">0 / 0</span>
+        <span id="pp">0%</span>
+      </div>
+    </div>
+
+    <div class="acts" id="acts" style="display:none">
+      <button class="btn bu" onclick="mark(false)">✗ 不认识</button>
+      <button class="btn bk" onclick="mark(true)">✓ 认识</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat k"><b id="sk">0</b> 认识</div>
+      <div class="streak">🔥 <span id="strk">0</span> 连胜</div>
+      <div class="stat u"><b id="su">0</b> 不认识</div>
+    </div>
+  </div>
+
+  <!-- Finish view -->
+  <div class="finish" id="finish-view">
+    <div class="fi-icon">🎉</div>
+    <div class="fi-title" id="fin-title">本轮完成！</div>
+    <div class="fi-sub" id="fin-sub"></div>
+    <div class="fi-stats">
+      <div class="fis k"><div class="n" id="fk">0</div><div class="l">认识</div></div>
+      <div class="fis u"><div class="n" id="fu">0</div><div class="l">不认识</div></div>
+      <div class="fis f"><div class="n" id="ff">0</div><div class="l">收藏</div></div>
+    </div>
+    <div class="fi-btns">
+      <button class="fb review" id="fb-rev" onclick="reviewUnknown()">复习不认识</button>
+      <button class="fb fav-rev" id="fb-fav" onclick="reviewFav()">复习收藏</button>
+      <button class="fb restart" onclick="restartAll()">重新开始</button>
+    </div>
+  </div>
+
+<!-- 兜底错误面板 -->
+<div class="error-overlay" id="error-overlay" role="alertdialog" aria-modal="true" aria-label="界面出错了">
+  <div class="error-box">
+    <div class="error-title">界面出问题了</div>
+    <div class="error-detail" id="error-detail"></div>
+    <div class="error-hint">可以先重新加载；日志在 %APPDATA%\ielts-widget\error.log</div>
+    <div class="error-btns">
+      <button class="error-btn ghost" onclick="hideErrorPanel()">继续使用</button>
+      <button class="error-btn" onclick="reloadApp()">重新加载</button>
+    </div>
+  </div>
+</div>
+
+<!-- 首次启动引导 -->
+<div class="guide-overlay" id="guide-overlay" role="dialog" aria-modal="true" aria-label="使用引导">
+  <div class="guide-box">
+    <div class="guide-title">欢迎使用词境</div>
+    <div class="guide-line"><b>F1</b> / <b>空格</b> 翻卡 · <b>F2</b> 认识 · <b>F3</b> 不认识</div>
+    <div class="guide-line"><b>Ctrl+Shift+H</b> 老板键：一秒隐藏 / 召回</div>
+    <div class="guide-line"><b>Ctrl+Shift+D</b> 复制取词：复制一段英文后按此键，收进生词本</div>
+    <div class="guide-line"><b>1 2 3 4 5</b> 快速切换核心 / 高频 / 基础 / 所有 / 自定义</div>
+    <div class="guide-line">词库管理、改键位、清空记忆 在安装目录的 .bat 里</div>
+    <button class="guide-ok" onclick="closeGuide()">开始背单词</button>
+  </div>
+</div>
+
+<!-- Word Detail Modal -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="word-detail" id="word-detail">
+  <div class="detail-handle"></div>
+  <div class="detail-header">
+    <div class="detail-title-row">
+      <div class="detail-word" id="detail-word"></div>
+      <button class="detail-speak" id="detail-speak-btn" onclick="detailSpeak()" title="朗读">♪</button>
+    </div>
+    <div class="detail-meta">
+      <span class="detail-ph" id="detail-ph"></span>
+      <span class="detail-pos" id="detail-pos"></span>
+      <span class="detail-cat" id="detail-cat"></span>
+    </div>
+    <div class="detail-status-row" id="detail-status-row"></div>
+  </div>
+  <div class="detail-body">
+    <div>
+      <div class="detail-cn" id="detail-cn"></div>
+      <div class="detail-en" id="detail-en"></div>
+    </div>
+    <div id="detail-example-wrap">
+      <div class="detail-section-title">例句</div>
+      <div class="detail-example" id="detail-example">
+        <div class="detail-ex-en" id="detail-ex-en"></div>
+        <div class="detail-ex-cn" id="detail-ex-cn"></div>
+      </div>
+    </div>
+  </div>
+  <div class="detail-actions">
+    <button class="detail-btn k" id="dbk" onclick="detailMark('k')">✓ 认识</button>
+    <button class="detail-btn u" id="dbu" onclick="detailMark('u')">✗ 不认识</button>
+    <button class="detail-btn f" id="dbf" onclick="detailMark('f')">★ 收藏</button>
+  </div>
+</div>
+
+</div>
+
+<!-- Word List Panel -->
+<div class="list-overlay" id="list-overlay" onclick="closeList()">
+  <div class="list-panel" onclick="event.stopPropagation()">
+    <div class="list-header" id="list-header-drag">
+      <div class="list-header-drag">
+        <div class="list-title">WORDS</div>
+        <div class="list-tabs">
+          <button class="ltab active" data-t="k" onclick="switchListTab('k')">认识</button>
+          <button class="ltab" data-t="u" onclick="switchListTab('u')">不认识</button>
+          <button class="ltab" data-t="f" onclick="switchListTab('f')">★ 收藏</button>
+        </div>
+      </div>
+      <button class="list-close" onclick="closeList()">×</button>
+    </div>
+    <div class="list-search">
+      <input id="list-search-input" placeholder="搜索单词…" oninput="scheduleRenderList()" autocomplete="off" spellcheck="false" />
+    </div>
+    <div class="list-count-bar" id="list-count-bar"></div>
+    <div class="list-body" id="list-body" role="list"></div>
+  </div>
+</div>
+<script src="vocab.js"></script>
+
+<script><!--JS--></script>
+</body>
+</html>

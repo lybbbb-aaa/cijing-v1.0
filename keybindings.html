@@ -6,7 +6,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:"Noto Serif SC","STSong",serif;
+  font-family:"Noto Serif SC","Source Han Serif SC","Source Han Serif","Microsoft YaHei","微软雅黑","PingFang SC","Hiragino Sans GB","STSong",serif;
   background:#f5f4f0;color:#1a1a1a;
   width:360px;min-height:100vh;
   padding:20px 16px 32px;
@@ -38,7 +38,7 @@ h1{
   border:1px solid rgba(0,0,0,0.18);
   border-radius:6px;padding:0 8px;
   font-size:11px;color:#1a1a1a;
-  font-family:"EB Garamond",serif;
+  font-family:"EB Garamond","Times New Roman",Georgia,serif;
   outline:none;cursor:pointer;text-align:center;
   transition:all .15s;
 }
@@ -75,7 +75,7 @@ h1{
 }
 .btn{
   flex:1;height:34px;border-radius:10px;border:1px solid;
-  font-family:"Noto Serif SC",serif;font-size:11px;font-weight:500;
+  font-family:"Noto Serif SC","Source Han Serif SC","Source Han Serif","Microsoft YaHei","微软雅黑","PingFang SC","Hiragino Sans GB","STSong",serif;font-size:11px;font-weight:500;
   cursor:pointer;letter-spacing:.05em;transition:all .18s;
 }
 .btn-save{
@@ -132,7 +132,7 @@ const STORAGE_KEY = 'ielts_keybindings';
 
 // Default keybindings: action -> array of keys
 const DEFAULTS = {
-  reveal:   { label:'翻开/收起答案', keys:['Space','Enter'],       desc:'翻面' },
+  reveal:   { label:'翻开/收起答案', keys:[' ','Enter'],         desc:'翻面' },
   known:    { label:'认识 → 下一张',  keys:['ArrowRight','l'],      desc:'认识' },
   unknown:  { label:'不认识 → 下一张',keys:['ArrowLeft','h'],       desc:'不认识' },
   skip:     { label:'跳过（不标记）', keys:['ArrowDown','s'],       desc:'跳过' },
@@ -174,7 +174,6 @@ function keyId(e) {
   if (e.altKey)   mods.push('Alt');
   let k = e.key;
   if (k === 'Control' || k === 'Shift' || k === 'Alt') return null; // modifier only
-  if (k === ' ') k = 'Space';
   return mods.length ? mods.join('+') + '+' + k : k;
 }
 
@@ -213,7 +212,7 @@ function renderBindings() {
       if (!k) return;
       const action = this.dataset.action;
       const idx = parseInt(this.dataset.idx);
-      bindings[action][idx] = k === 'Space' ? ' ' : k;
+      bindings[action][idx] = k;
       this.value = keyDisplay(k);
       this.classList.remove('listening');
       checkConflicts();
@@ -263,8 +262,8 @@ function saveKeys() {
   }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(bindings));
-    // Live-update the OS-level shortcut when the widget runs in this process
-    try { require('electron').ipcRenderer.send('set-boss-key', bk); } catch(e) {}
+    // 通知主进程立刻更新系统级快捷键（preload 暴露的桥）
+    try { if (window.cj) window.cj.send('set-boss-key', bk); } catch(e) {}
     showToast('✓ 已保存，重启应用后生效');
   } catch(e) {
     showToast('保存失败');

@@ -7,7 +7,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:"Noto Serif SC","STSong",serif;
+  font-family:"Noto Serif SC","Source Han Serif SC","Source Han Serif","Microsoft YaHei","微软雅黑","PingFang SC","Hiragino Sans GB","STSong",serif;
   background:#f5f4f0;color:#1a1a1a;width:520px;min-height:100vh;
   padding:20px 16px 32px;-webkit-font-smoothing:antialiased;
 }
@@ -135,6 +135,16 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
     正在编辑：<strong id="edit-word-name"></strong>
     <button class="btn btn-sm btn-secondary" style="margin-left:10px" onclick="cancelEdit()">取消编辑</button>
   </div>
+  <div style="margin-top:18px;padding-top:12px;border-top:1px solid rgba(0,0,0,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="font-size:10px;color:#888">当前版本 <b id="app-version">-</b> · 收录快捷键 <b>Ctrl+Shift+D</b></span>
+    <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">🔄 检查更新</button>
+    <button class="btn btn-sm btn-secondary" onclick="openDataDir()">📁 数据目录</button>
+    <button class="btn btn-sm btn-secondary" onclick="openErrorLog()">🧾 错误日志</button>
+    <button class="btn btn-sm btn-secondary" onclick="showAbout()">关于</button>
+    <label style="font-size:10px;color:#555;display:flex;align-items:center;gap:4px;cursor:pointer;margin-left:auto">
+      <input type="checkbox" id="autostart-chk" onchange="toggleAutostart(this.checked)"> 开机自动启动
+    </label>
+  </div>
 </div>
 
 <!-- IMPORT -->
@@ -228,6 +238,13 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
     <button class="btn btn-secondary" onclick="doExportClipboard()">复制到剪贴板</button>
   </div>
   <div class="import-preview" id="export-preview" style="display:none;margin-top:12px;max-height:240px;white-space:pre-wrap;word-break:break-all;"></div>
+  <div style="margin-top:22px;padding-top:14px;border-top:1px solid rgba(0,0,0,0.08)">
+    <p style="font-size:11px;color:#555;margin-bottom:10px;line-height:1.6">学习进度备份：包含认识/不认识、收藏、连胜天数、复习队列和自定义词库。<b>换电脑或重装前建议先导出一份。</b></p>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-primary" onclick="exportBackup()">导出学习备份</button>
+      <button class="btn btn-secondary" onclick="importBackup()">导入学习备份</button>
+    </div>
+  </div>
 </div>
 
 <!-- Detail popup -->
@@ -252,12 +269,42 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#1a6640;margin-botto
 
 <div class="toast" id="toast"></div>
 
+<!-- ABOUT -->
+<div class="detail-overlay" id="about-overlay" onclick="closeAbout()">
+  <div class="detail-card" onclick="event.stopPropagation()">
+    <span class="close" onclick="closeAbout()">×</span>
+    <h3>词境 <span id="about-version" style="font-size:12px;color:#888">-</span></h3>
+    <div class="def"><span class="def-label">桌面悬浮 IELTS 单词卡片</span></div>
+    <div style="margin-top:8px;font-size:11px;line-height:1.9;color:#555">
+      <div>开源许可：MIT</div>
+      <div>词库音标 / 释义 / 例句：Wiktionary (CC BY-SA 3.0)</div>
+      <div>数据目录：%APPDATA%\ielts-widget</div>
+      <div>反馈：GitHub Issues / 爱发电</div>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-sm btn-secondary" onclick="openDoc('CHANGELOG.md')">更新日志</button>
+      <button class="btn btn-sm btn-secondary" onclick="openDoc('LICENSE')">许可协议</button>
+      <button class="btn btn-sm btn-secondary" onclick="checkUpdate()">检查更新</button>
+    </div>
+  </div>
+</div>
+
 <script>
-const _fs   = (typeof require !== 'undefined') ? require('fs')   : null;
-const _path = (typeof require !== 'undefined') ? require('path') : null;
-const _pfile = (_fs && _path) ? _path.join(process.env.APPDATA || '', 'ielts-widget', 'progress.json') : null;
-const _cfile = (_fs && _path) ? _path.join(process.env.APPDATA || '', 'ielts-widget', 'custom_vocab.json') : null;
-if (_fs && _pfile) { try { _fs.mkdirSync(_path.dirname(_pfile), {recursive:true}); } catch(e) {} }
+const CJ = (typeof window !== 'undefined' && window.cj) ? window.cj : null;
+const _pfile = CJ ? CJ.dataPath('progress.json') : null;
+const _cfile = CJ ? CJ.dataPath('custom_vocab.json') : null;
+
+// 出错不再静默：统一写到 %APPDATA%\ielts-widget\error.log
+function logError(tag, err) {
+  try {
+    if (!CJ) return;
+    CJ.appendData('error.log',
+      '[' + new Date().toISOString() + '] ' + tag + ': ' +
+      (err && (err.stack || err.message) || String(err)) + '\n');
+  } catch(e) {}
+}
+window.addEventListener('error', e => logError('vocab-manager.onerror', e.error || e.message));
+window.addEventListener('unhandledrejection', e => logError('vocab-manager.unhandledrejection', e.reason));
 
 let _searchCat = 'all';
 let _manageCat = 'all';
@@ -266,12 +313,20 @@ let _detailWord = null;
 let _lastSearchQ = '';
 
 function loadCustom() {
-  if (!_fs || !_cfile) return { words: [], deleted: [], categories: {}, priority: [] };
-  try { return JSON.parse(_fs.readFileSync(_cfile, 'utf8')); } catch(e) { return { words: [], deleted: [], categories: {}, priority: [] }; }
+  const empty = { words: [], deleted: [], categories: {}, priority: [] };
+  if (!CJ) return empty;
+  try {
+    const txt = CJ.readDataWithBackup ? CJ.readDataWithBackup('custom_vocab.json') : CJ.readData('custom_vocab.json');
+    return JSON.parse(txt || 'null') || empty;
+  } catch(e) { return empty; }
 }
 function saveCustom(data) {
-  if (!_fs || !_cfile) return;
-  try { _fs.writeFileSync(_cfile, JSON.stringify(data, null, 2), 'utf8'); } catch(e) {}
+  if (!CJ) return;
+  try { CJ.writeData('custom_vocab.json', JSON.stringify(data, null, 2), { backup: true }); } catch(e) {}
+  notifyDataChanged('custom');
+}
+function notifyDataChanged(what) {
+  try { var ipc = _ipcRenderer(); if (ipc) ipc.send('notify-data-changed', what || 'all'); } catch(e) {}
 }
 
 // ── Base vocab ──
@@ -283,7 +338,7 @@ function getBaseVocab() {
     var arr = (typeof vocab !== 'undefined') ? vocab : (window.vocab || []);
     if (!arr || !arr.length) return _baseVocab;
     _baseVocab = arr.map(function(v) {
-      return { w:String(v[0]||''), cn:String(v[1]||''), cat:String(v[3]||'h'), _base:true, ph:'', en:'', ee:'' };
+      return { w:String(v[0]||''), cn:String(v[1]||''), cat:String(v[3]||'h'), _base:true, ph:String(v[4]||''), en:String(v[5]||''), ee:String(v[6]||'') };
     });
   } catch(e) {
     _baseVocab = [];
@@ -379,10 +434,24 @@ function startEdit(word) {
 }
 
 // ── Import ────────────────────────────────────────────────────────────────
+function parseCsvLine(line) {
+  const out = []; let cur = ''; let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inQ) {
+      if (ch === '"') { if (line[i + 1] === '"') { cur += '"'; i++; } else inQ = false; }
+      else cur += ch;
+    } else if (ch === '"') { inQ = true; }
+    else if (ch === ',') { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  out.push(cur);
+  return out;
+}
 function parseImportText(text) {
   const LEVEL = { c:'c',h:'h',b:'b',a:'a',core:'c',high:'h',basic:'b',adv:'a' };
   return text.split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
-    const p=line.split(',').map(s=>s.trim()); const w=p[0].toLowerCase();
+    const p=parseCsvLine(line).map(s=>s.trim()); const w=p[0].toLowerCase();
     return { w, cn:p[1]||'', cat:LEVEL[p[2]]||'h', p:'', ph:'', en:'', ee:'' };
   }).filter(x=>x.w.length>0);
 }
@@ -414,9 +483,12 @@ function setSearchCat(cat, el) {
   doSearch();
 }
 function hl(text, q) {
-  if (!q || q.length < 2) return text;
+  const s = String(text == null ? '' : text);
+  if (!q || q.length < 2) return esc(s);
   const re = new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')', 'gi');
-  return text.replace(re, '<span class="match-hl">$1</span>');
+  return s.split(re).map(function(part, i) {
+    return (i % 2 === 1) ? '<span class="match-hl">' + esc(part) + '</span>' : esc(part);
+  }).join('');
 }
 
 // ── Manage ────────────────────────────────────────────────────────────────
@@ -424,6 +496,12 @@ function setManageCat(cat, el) {
   _manageCat = cat;
   document.querySelectorAll('#manage-cat-pills .pill').forEach(function(p) { p.classList.toggle('active', p === el); });
   renderManage();
+}
+// HTML-escape text that goes into attributes/text nodes (words can contain ' " < &)
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 function renderManage() {
   const data = loadCustom();
@@ -467,33 +545,34 @@ function renderManage() {
   var _priList = _catData.priority || [];
   document.getElementById('batch-cat-sel').value = '';
   el.innerHTML = items.slice(0, _loadMoreLimit).map(function(x) {
+    var wa = esc(x.w);
     if (x._del) {
-      return '<div class="word-row"><input type="checkbox" class="wr-check" value="'+x.w+'" onchange="onCheck()"/>'+
-        '<span class="wr-word">'+x.w+'</span><span class="wr-cn">'+x.cn+'</span>'+
-        '<div class="wr-actions"><button class="wr-btn restore" onclick="restoreWord(\''+x.w+'\')">恢复</button></div></div>';
+      return '<div class="word-row" data-w="'+wa+'"><input type="checkbox" class="wr-check" value="'+wa+'" onchange="onCheck()"/>'+
+        '<span class="wr-word">'+wa+'</span><span class="wr-cn">'+esc(x.cn)+'</span>'+
+        '<div class="wr-actions"><button class="wr-btn restore" data-act="restore">恢复</button></div></div>';
     }
     var isCustom = !x._base;
     var curCat = _catOverrides[x.w] || x.cat || 'h';
     var isPri = _priList.indexOf(x.w) >= 0;
-    var catOpts = '<select class="cat-sel" onchange="changeCat(\''+x.w+'\',this.value)" onclick="event.stopPropagation()">'+
+    var catOpts = '<select class="cat-sel" data-act="cat">'+
       '<option value="c"'+(curCat==='c'?' selected':'')+'>核心</option>'+
       '<option value="h"'+(curCat==='h'?' selected':'')+'>高频</option>'+
       '<option value="b"'+(curCat==='b'?' selected':'')+'>基础</option>'+
       '<option value="a"'+(curCat==='a'?' selected':'')+'>进阶</option>'+
       '</select>';
-    var priBtn = '<button class="wr-btn'+(isPri?' pri-on':'')+'" onclick="togglePri(\''+x.w+'\')" title="'+(isPri?'取消优先':'设为优先')+'">'+(isPri?'★':'☆')+'</button>';
-    return '<div class="word-row">'+
-      '<input type="checkbox" class="wr-check" value="'+x.w+'" onchange="onCheck()"/>'+
-      '<span class="wr-word" onclick="showDetail(\''+x.w+'\')">'+x.w+'</span>'+
-      '<span class="wr-cn">'+(x.cn||'').slice(0,30)+'</span>'+
+    var priBtn = '<button class="wr-btn'+(isPri?' pri-on':'')+'" data-act="pri" title="'+(isPri?'取消优先':'设为优先')+'">'+(isPri?'★':'☆')+'</button>';
+    return '<div class="word-row" data-w="'+wa+'">'+
+      '<input type="checkbox" class="wr-check" value="'+wa+'" onchange="onCheck()"/>'+
+      '<span class="wr-word" data-act="detail">'+wa+'</span>'+
+      '<span class="wr-cn">'+esc((x.cn||'').slice(0,30))+'</span>'+
       catOpts +
       priBtn +
       (isCustom?'<span style="font-size:9px;color:#1a6640">自定义</span>':'')+
       '<div class="wr-actions">'+
-        (isCustom?'<button class="wr-btn edit" onclick="startEdit(\''+x.w+'\')">编辑</button>':'')+
-        '<button class="wr-btn del" onclick="deleteWord(\''+x.w+'\')">删除</button>'+
+        (isCustom?'<button class="wr-btn edit" data-act="edit">编辑</button>':'')+
+        '<button class="wr-btn del" data-act="del">删除</button>'+
       '</div></div>';
-  }).join('') + (_total > _loadMoreLimit ? '' : '');
+  }).join('');
   document.getElementById('load-more-btn').style.display = _total > _loadMoreLimit ? '' : 'none';
   document.getElementById('load-more-btn').textContent = '加载更多 ('+Math.min(_total, _loadMoreLimit)+' / '+_total+')';
   updateBatchInfo();
@@ -559,8 +638,10 @@ function getExportContent() {
     words = getUnifiedVocab().all.slice(0, 500);
   }
   if (fmt === 'csv') {
+    // 字段统一加引号并转义内部引号，Excel / 重新导入都不会串列
+    const q = s => '"' + String(s == null ? '' : s).replace(/"/g, '""') + '"';
     return 'word,cn,cat,ph,en,example\n' + words.map(v =>
-      [v.w, (v.cn||'').replace(/,/g,'；'), v.cat||'h', v.ph||'', (v.en||'').replace(/,/g,'；'), (v.ee||'').replace(/,/g,'；')].join(',')
+      [v.w, v.cn, v.cat || 'h', v.ph || '', v.en || '', v.ee || ''].map(q).join(',')
     ).join('\n');
   }
   return JSON.stringify(words.map(v => ({w:v.w,cn:v.cn||'',cat:v.cat||'h',ph:v.ph||'',en:v.en||'',ee:v.ee||''})), null, 2);
@@ -569,8 +650,8 @@ function doExport() {
   try {
     const content = getExportContent();
     const ext = document.getElementById('export-format').value === 'csv' ? '.csv' : '.json';
-    const fp = _path ? _path.join(process.env.APPDATA||'', 'ielts-widget', 'export_vocab'+ext) : null;
-    if (_fs && fp) { _fs.mkdirSync(_path.dirname(fp),{recursive:true}); _fs.writeFileSync(fp, content, 'utf8'); }
+    const fp = CJ ? CJ.dataPath('export_vocab' + ext) : null;
+    if (CJ && fp) CJ.writeData('export_vocab' + ext, content);
     document.getElementById('export-preview').style.display = 'block';
     document.getElementById('export-preview').textContent = `已导出到：${fp}\n\n` + content.slice(0, 2000);
     showToast('已导出到：'+fp);
@@ -699,19 +780,109 @@ function doSearch() {
   if (results.length === 0) { list.innerHTML = '<div class="empty">未找到匹配</div>'; return; }
   list.innerHTML = results.slice(0, 200).map(function(v) {
     var isCustom = !v._base;
-    return '<div class="word-row">' +
-      '<input type="checkbox" class="wr-check" value="'+v.w+'"/>' +
-      '<span class="wr-word" onclick="showDetail(\''+v.w+'\')">'+hl(v.w,q)+'</span>' +
-      (v.ph ? '<span class="wr-ph">'+v.ph+'</span>' : '<span class="wr-ph"></span>') +
+    var wa = esc(v.w);
+    return '<div class="word-row" data-w="'+wa+'">' +
+      '<input type="checkbox" class="wr-check" value="'+wa+'"/>' +
+      '<span class="wr-word" data-act="detail">'+hl(v.w,q)+'</span>' +
+      (v.ph ? '<span class="wr-ph">'+esc(v.ph)+'</span>' : '<span class="wr-ph"></span>') +
       '<span class="wr-cn">'+hl(v.cn||'',q)+'</span>' +
       '<span class="wr-tag '+v.cat+'">'+(TAG[v.cat]||v.cat)+'</span>' +
       (isCustom ? '<span style="font-size:9px;color:#1a6640">自定义</span>' : '') +
-      '<div class="wr-actions"><button class="wr-btn del" onclick="deleteWord(\''+v.w+'\')">删除</button></div>' +
+      '<div class="wr-actions"><button class="wr-btn del" data-act="del">删除</button></div>' +
       '</div>';
   }).join('') + (results.length>200?'<div class="empty">显示前200条，共'+results.length+'个</div>':'');
 }
 
+// ── IPC 小工具（preload 暴露的 window.cj） ───────────────────────────────
+function _ipcRenderer() { return CJ; }
+function appVersion() { try { return (CJ && CJ.version) || '-'; } catch(e) { return '-'; } }
+function checkUpdate() {
+  var ipc = _ipcRenderer();
+  if (ipc) ipc.send('open-external', 'https://github.com/lybbbb-aaa/cijing-v1.0/releases');
+  showToast('已打开下载页，可对比最新版本（当前 v' + appVersion() + '）');
+}
+function openDoc(name) { var ipc = _ipcRenderer(); if (ipc) ipc.send('open-doc', name); }
+function showAbout() {
+  var el = document.getElementById('about-version');
+  if (el) el.textContent = 'v' + appVersion();
+  var o = document.getElementById('about-overlay');
+  if (o) o.classList.add('show');
+}
+function closeAbout() {
+  var o = document.getElementById('about-overlay');
+  if (o) o.classList.remove('show');
+}
+function openDataDir()  { var ipc = _ipcRenderer(); if (ipc) ipc.send('open-data-dir'); }
+function openErrorLog() { var ipc = _ipcRenderer(); if (ipc) ipc.send('open-error-log'); }
+async function loadAutostart() {
+  var ipc = _ipcRenderer(); if (!ipc) return;
+  try {
+    var on = await ipc.invoke('get-autostart');
+    var el = document.getElementById('autostart-chk');
+    if (el) el.checked = !!on;
+  } catch(e) {}
+}
+function toggleAutostart(on) {
+  var ipc = _ipcRenderer(); if (!ipc) return;
+  ipc.send('set-autostart', !!on);
+  showToast(on ? '已开启开机自动启动' : '已关闭开机自动启动');
+}
+async function exportBackup() {
+  var ipc = _ipcRenderer();
+  if (!ipc) { showToast('仅桌面版支持'); return; }
+  try {
+    var r = await ipc.invoke('export-backup');
+    if (r && r.ok) showToast('已导出：' + r.path);
+    else if (r && r.canceled) {}
+    else showToast('导出失败：' + ((r && r.error) || '未知错误'));
+  } catch(e) { logError('exportBackup', e); showToast('导出失败：' + e.message); }
+}
+async function importBackup() {
+  var ipc = _ipcRenderer();
+  if (!ipc) { showToast('仅桌面版支持'); return; }
+  if (!confirm('导入会覆盖当前的学习进度与自定义词库，确定继续吗？')) return;
+  try {
+    var r = await ipc.invoke('import-backup');
+    if (r && r.ok) { _baseVocab = null; showToast('导入成功，重启词境后生效'); refreshStats(); renderManage(); }
+    else if (r && r.canceled) {}
+    else showToast('导入失败：' + ((r && r.error) || '未知错误'));
+  } catch(e) { logError('importBackup', e); showToast('导入失败：' + e.message); }
+}
+
+// ── Delegated events (word text is never interpolated into inline handlers) ─
+(function() {
+  var ml = document.getElementById('manage-list');
+  ml.addEventListener('click', function(e) {
+    var row = e.target.closest('[data-w]'); if (!row) return;
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    var w = row.dataset.w;
+    var act = b.dataset.act;
+    if (act === 'detail') showDetail(w);
+    else if (act === 'pri') togglePri(w);
+    else if (act === 'edit') startEdit(w);
+    else if (act === 'del') deleteWord(w);
+    else if (act === 'restore') restoreWord(w);
+  });
+  ml.addEventListener('change', function(e) {
+    var sel = e.target.closest('select[data-act="cat"]'); if (!sel) return;
+    var row = sel.closest('[data-w]'); if (!row) return;
+    changeCat(row.dataset.w, sel.value);
+  });
+  var sl = document.getElementById('search-list');
+  sl.addEventListener('click', function(e) {
+    var row = e.target.closest('[data-w]'); if (!row) return;
+    var b = e.target.closest('[data-act]'); if (!b) return;
+    if (b.dataset.act === 'detail') showDetail(row.dataset.w);
+    else if (b.dataset.act === 'del') deleteWord(row.dataset.w);
+  });
+})();
+
 // ── Init ──────────────────────────────────────────────────────────────────
+(function() {
+  var el = document.getElementById('app-version');
+  if (el) el.textContent = 'v' + appVersion();
+})();
+loadAutostart();
 clearAddForm();
 </script>
 </body>

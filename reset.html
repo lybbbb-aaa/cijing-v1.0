@@ -6,7 +6,7 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
-  font-family:"Noto Serif SC","STSong",serif;
+  font-family:"Noto Serif SC","Source Han Serif SC","Source Han Serif","Microsoft YaHei","微软雅黑","PingFang SC","Hiragino Sans GB","STSong",serif;
   background:#f5f4f0;color:#1a1a1a;
   width:340px;padding:24px 20px 32px;
   -webkit-font-smoothing:antialiased;
@@ -164,13 +164,10 @@ h1{font-size:14px;font-weight:600;letter-spacing:.2em;color:#7eb89a}
 
 <script>
 const SAVE_KEY = 'ielts_state_v4';
-const _fs2   = (typeof require !== 'undefined') ? require('fs')   : null;
-const _path3 = (typeof require !== 'undefined') ? require('path') : null;
-const _appdata = process.env.APPDATA || (typeof process !== 'undefined' && process.env.USERPROFILE ? process.env.USERPROFILE + '\\AppData\\Roaming' : '');
-const _pfile = (_fs2 && _path3) ? _path3.join(_appdata, 'ielts-widget', 'progress.json') : null;
-if (_fs2 && _pfile) { try { _fs2.mkdirSync(_path3.dirname(_pfile), {recursive:true}); } catch(e) {} }
-function _rp() { if (!_fs2||!_pfile) return {}; try { return JSON.parse(_fs2.readFileSync(_pfile,'utf8')); } catch(e) { return {}; } }
-function _wp(o) { if (!_fs2||!_pfile) return; try { _fs2.writeFileSync(_pfile, JSON.stringify(o), 'utf8'); } catch(e) {} }
+const CJ = (typeof window !== 'undefined' && window.cj) ? window.cj : null;
+const _pfile = CJ ? CJ.dataPath('progress.json') : null;
+function _rp() { if (!CJ) return {}; try { return JSON.parse(CJ.readData('progress.json') || '{}'); } catch(e) { return {}; } }
+function _wp(o) { if (!CJ) return; try { o = (o && typeof o === 'object') ? o : {}; o.updatedAt = Date.now(); CJ.writeData('progress.json', JSON.stringify(o), { backup: true }); } catch(e) {} try { CJ.send('notify-data-changed', 'progress'); } catch(e) {} }
 
 let selectedMode = 'progress';
 
@@ -184,7 +181,7 @@ function loadStats() {
     document.getElementById('cnt-today').textContent   = ((d.dailyStats || {}).count || 0) + ' 词';
     document.getElementById('storage-info').textContent = Object.keys(d).length
       ? '✓ 已读取学习数据 (' + _pfile + ')'
-      : '⚠ 无法读取数据 - 文件路径: ' + (_pfile || '(未知)') + ' | fs可用: ' + (!!_fs2);
+      : '⚠ 无法读取数据 - 文件路径: ' + (_pfile || '(未知)') + ' | bridge: ' + (!!CJ);
   } catch(e) {
     document.getElementById('storage-info').textContent = '读取失败: ' + e.message;
   }
@@ -217,6 +214,7 @@ function doReset() {
       d.known   = [];
       d.unknown = [];
       d.srQueue = [];
+      d.srs     = {};
       d.favs    = [];
       d.streak  = 0;
       d.dailyStats = { date: '', count: 0, dayStreak: 0 };

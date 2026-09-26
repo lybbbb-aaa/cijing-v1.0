@@ -1,1 +1,20 @@
-﻿{"name":"ielts-widget","version":"1.0.0","main":"main.js"}
+{
+  "name": "ielts-widget",
+  "version": "1.1.1",
+  "private": true,
+  "description": "词境 — IELTS 桌面悬浮单词卡片",
+  "main": "main.js",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "22.3.27"
+  },
+  "scripts": {
+    "build": "python tools/build.py",
+    "check": "python tools/build.py --check",
+    "vocab": "python tools/build_vocab.py",
+    "test": "node tests/widget_logic.test.js",
+    "dev": "electron .",
+    "release": "python tools/package.py",
+    "icon": "powershell -ExecutionPolicy Bypass -File tools/make_icon.ps1"
+  }
+}
